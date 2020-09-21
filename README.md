@@ -3,4 +3,4 @@
 Team Members
 1. Albert Darmawan
 2. Nuvi
-3. Wildan
+3. Wildan Anugrah Putra
