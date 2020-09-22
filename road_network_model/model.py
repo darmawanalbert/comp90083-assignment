@@ -13,8 +13,7 @@ from mesa import Model
 from mesa.space import MultiGrid
 from mesa.datacollection import DataCollector
 
-from wolf_sheep.agents import Sheep, Wolf, GrassPatch
-from wolf_sheep.schedule import RandomActivationByBreed
+from road_network_model.agents import Car
 
 
 class Car(Model):
@@ -24,6 +23,8 @@ class Car(Model):
     )
 
     def step(self):
+        """ step """
 
     def run_model(self, step_count=200):
+        """ run model """
 

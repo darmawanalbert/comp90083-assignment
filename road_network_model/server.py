@@ -2,11 +2,11 @@ from mesa.visualization.ModularVisualization import ModularServer
 from mesa.visualization.modules import CanvasGrid, ChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 
-from wolf_sheep.agents import Wolf, Sheep, GrassPatch
-from wolf_sheep.model import WolfSheep
+from road_network_model.agents import Car
+from road_network_model.model import Car
 
 
-def wolf_sheep_portrayal(agent):
+def car_portrayal(agent):
     if agent is None:
         return
 
@@ -19,9 +19,17 @@ def wolf_sheep_portrayal(agent):
 
     return portrayal
 
+canvas_element = CanvasGrid(car_portrayal, 20, 20, 500, 500)
+
+model_params = {
+    "checkbox_param": UserSettableParameter("checkbox", "is Enabled", True),
+    "slider_param": UserSettableParameter(
+        "slider", "Slider Params", 20, 1, 50
+    )
+}
 
 server = ModularServer(
-    Car, [canvas_element, chart_element], "Odd-Even Rationing Control", model_params
+    Car, [canvas_element], "Odd-Even Rationing Control", model_params
 )
 
 server.port = 8521

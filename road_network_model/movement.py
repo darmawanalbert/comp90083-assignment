@@ -8,6 +8,8 @@ from mesa import Agent
 class Car(Agent):
     
     def __init__(self, unique_id, pos, model, moore=True):
+        """ init """
         
-    def random_move(self):
+    def move(self):
+        """ car move """
         

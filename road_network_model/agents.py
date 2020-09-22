@@ -3,6 +3,7 @@ from road_network_model.movement import Car
 
 class Car(Agent):
     
-    def __init__(self, unique_id, pos, model, fully_grown, countdown):
-        
+    def __init__(self):
+        """ init """
     def step(self):
+        """ step """
