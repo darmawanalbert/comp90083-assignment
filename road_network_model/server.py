@@ -2,34 +2,24 @@ from mesa.visualization.ModularVisualization import ModularServer
 from mesa.visualization.modules import CanvasGrid, ChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 
-from road_network_model.agents import Car
-from road_network_model.model import Car
+from road_network_model.agent import Car
+from road_network_model.model import RoadNetworkModel
+from road_network_model.portrayal import road_network_model_portrayal
+from road_network_model.constant import PROJECT_TITLE, CANVAS_WIDTH, CANVAS_HEIGHT, GRID_WIDTH, GRID_HEIGHT, NUMBER_OF_CARS
 
+# Define a CanvasGrid to visualise the Road Network Model
+canvas_element = CanvasGrid(road_network_model_portrayal, GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT)
 
-def car_portrayal(agent):
-    if agent is None:
-        return
-
-    portrayal = {}
-
-    if type(agent) is Car:
-        portrayal["Shape"] = "" # ex: road_network_model/resources/car.png
-        portrayal["scale"] = 0.9
-        portrayal["Layer"] = 1
-
-    return portrayal
-
-canvas_element = CanvasGrid(car_portrayal, 20, 20, 500, 500)
-
-model_params = {
-    "checkbox_param": UserSettableParameter("checkbox", "is Enabled", True),
-    "slider_param": UserSettableParameter(
-        "slider", "Slider Params", 20, 1, 50
-    )
+# Define parameter of Road Network Model
+road_network_model_params = {
+    "number_of_cars": NUMBER_OF_CARS,
+    "width": GRID_WIDTH,
+    "height": GRID_HEIGHT
 }
 
+# Instantiate the server at port 8521
 server = ModularServer(
-    Car, [canvas_element], "Odd-Even Rationing Control", model_params
+    RoadNetworkModel, [canvas_element], PROJECT_TITLE, road_network_model_params
 )
 
 server.port = 8521

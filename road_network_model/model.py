@@ -1,30 +1,45 @@
-"""
-Wolf-Sheep Predation Model
-================================
-
-Replication of the model found in NetLogo:
-    Wilensky, U. (1997). NetLogo Wolf Sheep Predation model.
-    http://ccl.northwestern.edu/netlogo/models/WolfSheepPredation.
-    Center for Connected Learning and Computer-Based Modeling,
-    Northwestern University, Evanston, IL.
-"""
-
 from mesa import Model
 from mesa.space import MultiGrid
+from mesa.time import SimultaneousActivation
 from mesa.datacollection import DataCollector
 
-from road_network_model.agents import Car
+from road_network_model.agent import Car, Road
+from road_network_model.map import MapGenerator
+from road_network_mode.constant import DIRECTION
 
-
-class Car(Model):
- 
+class RoadNetworkModel(Model):
     description = (
-        "A model for simulating wolf and sheep (predator-prey) ecosystem modelling."
+        "A model for simulating Road Network Model"
     )
 
+    def __init__(self, number_of_cars, width, height):
+        # Set up Spatial dimension
+        self.grid = MultiGrid(width, height, True)
+
+        # Set up Temporal dimension
+        self.schedule = SimultaneousActivation(self)
+
+        for i in range (number_of_cars):
+            plate_number_oddity = self.random.randint(0, 1)
+
+            source_x = self.random.randrange(self.grid.width)
+            source_y = self.random.randrange(self.grid.height)
+            destination_x = 0
+            destination_y = 0
+            max_speed = 100
+            car_direction = self.random.choice(DIRECTION.keys()) # to be changed
+
+            car = Car(i, plate_number_oddity, [source_x,source_y], (destination_x,destination_y), max_speed, car_direction, self)
+            self.grid.place_agent(car, (source_x,source_y))
+
+        ## generate road
+        mapGenerator = MapGenerator()
+        roadPosition = mapGenerator.generate_road_position()
+        for i in range(len(roadPosition)):
+            road = Road(i, roadPosition[i], self)
+            self.grid.place_agent(road, roadPosition[i])
+
+        ## generate building
+
     def step(self):
-        """ step """
-
-    def run_model(self, step_count=200):
-        """ run model """
-
+        self.schedule.step()
