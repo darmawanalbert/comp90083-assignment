@@ -22,3 +22,10 @@ DIRECTION = {
     "WEST": [-1,0],
     "EAST": [1,0]
 }
+
+# Car State
+CAR_STATE = {
+    "IDLE": 0,
+    "MOVE": 1,
+    "FINISHED": 2
+}
