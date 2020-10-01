@@ -18,6 +18,7 @@ class RoadNetworkModel(Model):
 
         # Set up Temporal dimension
         self.schedule = SimultaneousActivation(self)
+        self.running = True
 
         ## generate road
         self.map = MapGenerator()
@@ -48,16 +49,18 @@ class RoadNetworkModel(Model):
             destination_y = 0
             max_speed = 100
             car_direction = layout[source_x][source_y] # "^" "v" ">" "<"
+            #print(car_direction)
             car_state = "IDLE"
 
             car = Car(i, plate_number_oddity,
-                        [source_x,source_y],
+                        (source_x,source_y),
                         (destination_x,destination_y),
-                        max_speed,
                         car_direction,
+                        max_speed,
                         car_state, self)
 
             self.grid.place_agent(car, (source_x,source_y))
+            self.schedule.add(car)
 
 
     def step(self):
