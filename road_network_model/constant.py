@@ -17,10 +17,11 @@ LAYOUT_FILENAME = "road_network_model/layouts/map1_20x20.layout"
 # Directions (based on Von Neumann Neighbour)
 # Dictionary of [x,y] vector
 DIRECTION = {
-    "NORTH": [0,1],
-    "SOUTH": [0,-1],
-    "WEST": [-1,0],
-    "EAST": [1,0]
+    "^": [0,1],
+    "v": [0,-1],
+    "<": [-1,0],
+    ">": [1,0],
+    "_": [0,0]
 }
 
 # Car State
