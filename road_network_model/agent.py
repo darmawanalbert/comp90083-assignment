@@ -47,7 +47,7 @@ class Car(Agent):
             new_x = self.current_coor[0]
         if new_y < 0 or new_y == GRID_HEIGHT:
             new_y = self.current_coor[1]
-        
+
         car_in_front = False
         front_neighbor = None
         for neighbor in neighbors:
@@ -86,9 +86,9 @@ class Road(Agent):
         super().__init__(unique_id, model)
         self.pos = pos
         self.model = model
-    
+
     def getDirections(self):
-        self.model.map.get_road_position() 
+        self.model.map.get_road_position()
 
     def getRoadPosition(self):
         return self.model.map.get_road_position()
