@@ -6,7 +6,10 @@ from road_network_model.constant import GRID_HEIGHT, LAYOUT_FILENAME, GRID_WIDTH
 # v : South
 # < : West
 # > : East
-# @ : Building (nodes)
+# + : intersections
+# O : Office (nodes)
+# R : Residence (nodes)
+# E : Entertaint (nodes)
 # - : Nothing
 
 
@@ -18,10 +21,15 @@ class MapGenerator:
         lines = raw_layout.readlines()
 
         self.road = []
-        self.building = []
-        self.road_directions = ['<','>','^','v']
+        self.offices = []
+        self.residences = []
+        self.entertaints = []
+        self.road_directions = ['<','>','^','v','+']
         self.layout = []
         y = GRID_HEIGHT - 1
+
+        print("y: ", y)
+        print("x: ", GRID_WIDTH)
 
         ## initialize 2D layout
         for i in range(0, GRID_WIDTH):
@@ -36,8 +44,12 @@ class MapGenerator:
             for i in range(len(line.strip())):
                 if(line.strip()[i] in self.road_directions):
                     self.road.append((x, y))
-                if(line.strip()[i] == '@'):
-                    self.building.append((x, y))
+                if(line.strip()[i] == 'O'):
+                    self.offices.append((x, y))
+                if(line.strip()[i] == 'R'):
+                    self.residences.append((x, y))
+                if(line.strip()[i] == 'E'):
+                    self.entertaints.append((x, y))
                 
                 ## replace # with line.strip()[i]
                 self.layout[x][y] = line.strip()[i]
@@ -48,8 +60,14 @@ class MapGenerator:
     def get_road_position(self):
         return self.road
 
-    def get_building_position(self):
-        return self.building
+    def get_office_position(self):
+        return self.offices
+
+    def get_residence_position(self):
+        return self.residences
+
+    def get_entertaint_position(self):
+        return self.entertaints
 
     def get_layout(self):
         return self.layout

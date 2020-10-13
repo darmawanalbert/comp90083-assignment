@@ -93,7 +93,19 @@ class Road(Agent):
     def getRoadPosition(self):
         return self.model.map.get_road_position()
 
-class Building(Agent):
+class Office(Agent):
+    def __init__(self, unique_id, pos, model):
+        super().__init__(unique_id, model)
+        self.pos = pos
+        self.model = model
+
+class Entertaint(Agent):
+    def __init__(self, unique_id, pos, model):
+        super().__init__(unique_id, model)
+        self.pos = pos
+        self.model = model
+
+class Residence(Agent):
     def __init__(self, unique_id, pos, model):
         super().__init__(unique_id, model)
         self.pos = pos
