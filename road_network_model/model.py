@@ -3,7 +3,7 @@ from mesa.space import MultiGrid
 from mesa.time import SimultaneousActivation
 from mesa.datacollection import DataCollector
 
-from road_network_model.agent import Car, Road, Building
+from road_network_model.agent import Car, Road, Office, Residence, Entertaint
 from road_network_model.map import MapGenerator
 from road_network_model.constant import DIRECTION, CAR_STATE
 
@@ -27,11 +27,23 @@ class RoadNetworkModel(Model):
             road = Road(i, roadPosition[i], self)
             self.grid.place_agent(road, roadPosition[i])
 
-        ## generate building
-        buildingPosition = self.map.get_building_position()
-        for i in range(len(buildingPosition)):
-            building = Building(i, buildingPosition[i], self)
-            self.grid.place_agent(building, buildingPosition[i])
+        ## generate office
+        officePosition = self.map.get_office_position()
+        for i in range(len(officePosition)):
+            office = Office(i, officePosition[i], self)
+            self.grid.place_agent(office, officePosition[i])
+        
+        ## generate residence
+        residencePosition = self.map.get_residence_position()
+        for i in range(len(residencePosition)):
+            residence = Residence(i, residencePosition[i], self)
+            self.grid.place_agent(residence, residencePosition[i])
+        
+        ## generate entertaint
+        entertaintPosition = self.map.get_entertaint_position()
+        for i in range(len(entertaintPosition)):
+            entertaint = Entertaint(i, entertaintPosition[i], self)
+            self.grid.place_agent(entertaint, entertaintPosition[i])
 
         # Create a set of initial car positions
         initial_car_position = set()
