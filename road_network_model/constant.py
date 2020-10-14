@@ -2,15 +2,15 @@
 PROJECT_TITLE = "Odd-Even Rationing Control"
 
 # HTML Canvas Size
-CANVAS_WIDTH = 400
-CANVAS_HEIGHT = 400
+CANVAS_WIDTH = 1000
+CANVAS_HEIGHT = 1000
 
 # Grid Size
 GRID_WIDTH = 100
 GRID_HEIGHT = 100
 
 # Initialization Constant
-NUMBER_OF_CARS = 5
+NUMBER_OF_CARS = 1
 
 LAYOUT_FILENAME = "road_network_model/layouts/map2_100x100.layout"
 
@@ -21,7 +21,15 @@ DIRECTION = {
     "v": [0,-1],
     "<": [-1,0],
     ">": [1,0],
-    "_": [0,0]
+    #"_": [0,0]
+}
+
+# proportion of office workers for each day
+DAY = {
+    "THU": 0.7,
+    "FRI": 0.8,
+    "SAT": 0.2,
+    "SUN": 0.1
 }
 
 # Car State

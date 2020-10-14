@@ -1,5 +1,6 @@
 from mesa import Agent
 from road_network_model.constant import DIRECTION, CAR_STATE, GRID_HEIGHT, GRID_WIDTH
+import math
 
 class Car(Agent):
     X_COOR = 0
@@ -15,9 +16,11 @@ class Car(Agent):
                 car_state,
                 model):
         super().__init__(unique_id,model)
-        self.plate_number_oddity = plate_number_oddity # ODD or EVEN
+        self.plate_number_oddity = plate_number_oddity # ODD or EVEN, 0 is even and 1 is odd
         self.current_coor = source_coor
+        self.source_coor = source_coor
         self.destination_coor = destination_coor
+        self.exit_direction = car_direction
         self.current_direction = car_direction
         self.current_state = car_state
         self.max_speed = max_speed
@@ -31,6 +34,13 @@ class Car(Agent):
                         True) # True = includes centre
 
         return neighbors
+    
+    def getCrowDistance(self, coor1, coor2):
+        distance = math.sqrt(
+            ((coor1[self.X_COOR]-coor2[self.X_COOR]) **2) + ((coor1[self.Y_COOR]-coor2[self.Y_COOR]) **2)
+            )
+
+        return distance
 
     # SimultaneousActivation required two methods: step and advance
     def step(self):
@@ -39,14 +49,42 @@ class Car(Agent):
         neighbors = self.neighbors()
         layout = self.model.map.get_layout()
         new_direction = layout[self.current_coor[0]][self.current_coor[1]]
-        self.current_direction = new_direction
+        
+        if new_direction not in DIRECTION:
+            new_direction = self.exit_direction
+            next_coor_x = self.current_coor[0] + DIRECTION[new_direction][0]
+            next_coor_y = self.current_coor[1] + DIRECTION[new_direction][1]
+            self.current_direction = layout[next_coor_x][next_coor_y]
+        else:
+            #print("new_direction ", self.current_coor, " : ", new_direction)
+            self.current_direction = new_direction
+            #new_direction = self.current_direction
 
-        new_x = self.current_coor[0] + DIRECTION[self.current_direction][0]
-        new_y = self.current_coor[1] + DIRECTION[self.current_direction][1]
-        if new_x < 0 or new_x == GRID_WIDTH:
+        # get successing location after action
+        if new_direction == '+':
+            # should find the shortest path to destination, but for now simplify using distance measurements
+            shortestDist = float("inf")
             new_x = self.current_coor[0]
-        if new_y < 0 or new_y == GRID_HEIGHT:
             new_y = self.current_coor[1]
+            for direction in DIRECTION:
+                temp_x = self.current_coor[0] + DIRECTION[self.current_direction][0]
+                temp_y = self.current_coor[1] + DIRECTION[self.current_direction][1]
+                
+                newDist = self.getCrowDistance((temp_x, temp_y), self.destination_coor)
+                if newDist < shortestDist:
+                    shortestDist = newDist
+                    best_action = direction
+
+                    new_x = temp_x
+                    new_y = temp_y
+
+        else:
+            new_x = self.current_coor[0] + DIRECTION[self.current_direction][0]
+            new_y = self.current_coor[1] + DIRECTION[self.current_direction][1]
+            if new_x < 0 or new_x == GRID_WIDTH:
+                new_x = self.current_coor[0]
+            if new_y < 0 or new_y == GRID_HEIGHT:
+                new_y = self.current_coor[1]
 
         car_in_front = False
         front_neighbor = None
