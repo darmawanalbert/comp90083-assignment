@@ -28,9 +28,6 @@ class MapGenerator:
         self.layout = []
         y = GRID_HEIGHT - 1
 
-        print("y: ", y)
-        print("x: ", GRID_WIDTH)
-
         ## initialize 2D layout
         for i in range(0, GRID_WIDTH):
             temp = []
@@ -50,9 +47,9 @@ class MapGenerator:
                     self.residences.append((x, y))
                 if(line.strip()[i] == 'E'):
                     self.entertaints.append((x, y))
-                
-                ## replace # with line.strip()[i]
+
                 self.layout[x][y] = line.strip()[i]
+
                 x += 1
             y -= 1
 
@@ -71,3 +68,31 @@ class MapGenerator:
 
     def get_layout(self):
         return self.layout
+    
+    def get_successors(self, x, y):
+
+        print("x: ", x, ", y: ", y)
+        
+        state_fringes = []
+        state_fringes.append(((x + 1, y), ">"))
+        state_fringes.append(((x - 1, y), "<"))
+        state_fringes.append(((x, y + 1), "^"))
+        state_fringes.append(((x, y - 1), "v"))
+        
+        print("state_fringes: ", state_fringes)
+
+        result_next_state = []
+        for state_fringe in state_fringes:
+            if self.is_road(state_fringe[0][0], state_fringe[0][1]) == True:
+                result_next_state.append(state_fringe)
+
+        print("result_next_state: ", result_next_state)
+        
+        return result_next_state
+
+    def is_road(self, x, y):
+        coordinate = (x, y)
+        if coordinate in self.road:
+            return True
+        else:
+            return False
