@@ -38,3 +38,11 @@ CAR_STATE = {
     "MOVE": 1,
     "FINISHED": 2
 }
+
+INTERSECTION = {
+    "AVE_AVE": 'T',
+    "AVE_ST": 't',
+    "ST_AVE": '+',
+    "ST_ST": '#',
+    "ALL_LA": '*'
+}
