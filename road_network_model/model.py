@@ -59,7 +59,7 @@ class RoadNetworkModel(Model):
         source_list = self.map.get_residence_position()
         office = self.map.get_office_position()
         entertainment = self.map.get_entertaint_position()
-        print(entertainment)
+        #print(entertainment)
 
         # Create destination list based on weekday/weekend proportion
         proportion_of_office_workers = DAY[self.day]
@@ -77,8 +77,8 @@ class RoadNetworkModel(Model):
             entertainment_list.append(entertainment[self.random.randint(0, len(entertainment) - 1)])
             shopper += 1
         
-        print(office_list)
-        print(entertainment_list)
+        #print(office_list)
+        #print(entertainment_list)
         
         """# Create a set of initial car positions
         initial_car_position = set() # set? so no two cars can start from the same position?
@@ -100,9 +100,13 @@ class RoadNetworkModel(Model):
             source_y = roadPosition[current_index][1]"""
             # Randomising car sources
             random_position = initial_car_position.pop()
-            source_x = random_position[0]
+            
+            source_x = 46
+            source_y = 2
+            # UNCOMMENT LATER
+            # source_x = random_position[0]
             #print(source_x)
-            source_y = random_position[1]
+            # source_y = random_position[1]
             #print(source_y)
 
             # Randomising car destinations
@@ -129,9 +133,10 @@ class RoadNetworkModel(Model):
             max_speed = 100
             stateFringes = self.map.get_successors(source_x, source_y)
             shortestDist = float("inf")
+            car_direction = stateFringes[0][1]
             for stateFringe in stateFringes:
                 current_direction =  stateFringe[1] # "^" "v" ">" "<"
-                print(stateFringe[0])
+                #print(stateFringe[0])
                 if current_direction in DIRECTION:
                     temp_x = stateFringe[0][0] + DIRECTION[current_direction][0]
                     temp_y = stateFringe[0][1] + DIRECTION[current_direction][1]
@@ -140,7 +145,7 @@ class RoadNetworkModel(Model):
                     if newDist < shortestDist:
                         shortestDist = newDist
                         car_direction = current_direction
-                        print((source_x, source_y), car_direction)
+                        #print((source_x, source_y), car_direction)
 
             #print(car_direction)
             car_state = "IDLE"
@@ -151,7 +156,7 @@ class RoadNetworkModel(Model):
                         car_direction,
                         max_speed,
                         car_state, self)
-            print("car direction: ", car_direction)
+            #print("car direction: ", car_direction)
 
             self.grid.place_agent(car, (source_x,source_y))
             self.schedule.add(car)
@@ -159,4 +164,4 @@ class RoadNetworkModel(Model):
     def step(self):
         self.schedule.step()
         self.tick += 1
-        print(self.tick)
+        #print(self.tick)

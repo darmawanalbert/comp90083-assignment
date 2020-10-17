@@ -27,6 +27,8 @@ class Car(Agent):
         self.next_coor = (0,0)
         self.next_state = None
 
+        print(self.destination_coor)
+
     def neighbors(self):
         neighbors = self.model.grid.neighbor_iter(
                         (self.current_coor[Car.X_COOR],
@@ -50,25 +52,32 @@ class Car(Agent):
         layout = self.model.map.get_layout()
         new_direction = layout[self.current_coor[0]][self.current_coor[1]]
         
+        test = self.model.map.get_exit_point((46, 2),">",layout[46][2])
+        print("test: ", test)
+
+        #print("new direction: ", new_direction)
+        #print("exit dir: ", self.exit_direction)
         if new_direction not in DIRECTION:
             new_direction = self.exit_direction
             next_coor_x = self.current_coor[0] + DIRECTION[new_direction][0]
             next_coor_y = self.current_coor[1] + DIRECTION[new_direction][1]
-            self.current_direction = layout[next_coor_x][next_coor_y]
+            self.current_direction = new_direction
         else:
             #print("new_direction ", self.current_coor, " : ", new_direction)
             self.current_direction = new_direction
             #new_direction = self.current_direction
-
+        
         # get successing location after action
-        if new_direction == '+':
+        if layout[self.current_coor[0]][self.current_coor[1]] == 'T':
             # should find the shortest path to destination, but for now simplify using distance measurements
             shortestDist = float("inf")
             new_x = self.current_coor[0]
             new_y = self.current_coor[1]
+            #print("HI")
             for direction in DIRECTION:
-                temp_x = self.current_coor[0] + DIRECTION[self.current_direction][0]
-                temp_y = self.current_coor[1] + DIRECTION[self.current_direction][1]
+                #print(direction)
+                temp_x = self.current_coor[0] + DIRECTION[direction][0]
+                temp_y = self.current_coor[1] + DIRECTION[direction][1]
                 
                 newDist = self.getCrowDistance((temp_x, temp_y), self.destination_coor)
                 if newDist < shortestDist:
@@ -77,6 +86,9 @@ class Car(Agent):
 
                     new_x = temp_x
                     new_y = temp_y
+            
+            new_direction = best_action
+            self.current_direction = new_direction
 
         else:
             new_x = self.current_coor[0] + DIRECTION[self.current_direction][0]
