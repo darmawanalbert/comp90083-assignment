@@ -133,7 +133,7 @@ class RoadNetworkModel(Model):
                     destination_y = random_position[0]
 
             stateFringes = self.map.get_fringes(source_x, source_y)
-            shortestDist = float("inf")
+            shortest_distance = float("inf")
             car_direction = stateFringes[0][1]
             for stateFringe in stateFringes:
                 current_direction =  stateFringe[1] # "^" "v" ">" "<"
@@ -142,8 +142,8 @@ class RoadNetworkModel(Model):
                     temp_y = stateFringe[0][1] + DIRECTION[current_direction][1]
 
                     newDist = get_euclidean_distance((temp_x, temp_y), (destination_x, destination_y))
-                    if newDist < shortestDist:
-                        shortestDist = newDist
+                    if newDist < shortest_distance:
+                        shortest_distance = newDist
                         car_direction = current_direction
 
             car_state = "IDLE"

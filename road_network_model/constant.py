@@ -51,3 +51,11 @@ INTERSECTION = {
     "ST_ST": '#',
     "ALL_LA": '*'
 }
+
+INTERSECTION_SIGN = ['T','t','+','#','*']
+
+BUILDING = {
+    "O": 'OFFICE',
+    "R": 'RESIDENCE',
+    "E": 'ENTERTAINMENT'
+}
