@@ -111,7 +111,7 @@ class MapGenerator:
         number_of_fringes = len(self.get_fringes(current_x, current_y))
 
         if(intersection_type == INTERSECTION["AVE_AVE"]):
-            # Right Lane
+            # Right Lane (Inner Lane)
             if number_of_fringes == 4:
                 possible_exit_deltas = {
                     # 4 possibilities for each previous_direction:
@@ -124,7 +124,7 @@ class MapGenerator:
                     'v': [(2, -2), (-3, -4), (-3, -3), (0, -5)],
                     '<': [(-2, -2), (-4, 3), (-3, 3), (-5, 0)]
                 }
-            # Left Lane
+            # Left Lane (Outer Lane)
             else:
                 possible_exit_deltas = {
                     # 4 possibilities for each previous_direction:
@@ -138,21 +138,23 @@ class MapGenerator:
                     '<': [(-1, -1), (-4, 4), (-3, 4), (-5, 0)]
                 }
         elif(intersection_type == INTERSECTION["AVE_ST"]):
-            # Left Lane
+            # Right Lane (Inner Lane)
             if number_of_fringes == 4:
                 possible_exit_deltas = {
-                    '^': [],
-                    '>': [],
-                    'v': [],
-                    '<': []
+                    # 3 possibilities for each previous_direction: turn left, turn right, or go straight
+                    '^': [(-2, 1), (3, 2), (0, 3)],
+                    '>': [(1, 2), (2, -3), (3, 0)],
+                    'v': [(2, -1), (-3, -2), (0, -3)],
+                    '<': [(-1, -2), (-2, 3), (-3, 0)]
                 }
-            # Right Lane
+            # Left Lane (Outer Lane)
             else:
                 possible_exit_deltas = {
-                    '^': [],
-                    '>': [],
-                    'v': [],
-                    '<': []
+                    # 3 possibilities for each previous_direction: turn left, turn right, or go straight
+                    '^': [(-1, 1), (4, 2), (0, 3)],
+                    '>': [(1, 1), (2, -4), (3, 0)],
+                    'v': [(1, -1), (-4, -2), (0, -3)],
+                    '<': [(-1, -1), (-2, 4), (-3, 0)]
                 }
         elif(intersection_type == INTERSECTION["ST_ST"]):
             possible_exit_deltas = {
@@ -202,58 +204,3 @@ class MapGenerator:
                         exit_points.append(((x, y), self.layout[x][y]))
 
         return exit_points
-
-    def avenue_x_street(self, current_pos, previous_direction):
-        temp_exit_point = []
-        curr_x = current_pos[0]
-        curr_y = current_pos[1]
-        if(previous_direction == '^'):
-            if(len(self.get_fringes(curr_x, curr_y)) == 4):
-                #temp_exit_point.append(((curr_x - 2, curr_y + 1), self.layout[curr_x - 2][curr_y + 1])) # left, left lane
-                temp_exit_point.append(((curr_x + 3, curr_y + 2), self.layout[curr_x + 3][curr_y + 2])) # right, left lane
-            else:
-                temp_exit_point.append(((curr_x - 1, curr_y + 1), self.layout[curr_x - 1][curr_y + 1])) # left, left lane
-                temp_exit_point.append(((curr_x + 4, curr_y + 2), self.layout[curr_x + 4][curr_y + 2])) # right, left lane
-
-            temp_exit_point.append(((curr_x, curr_y + 3), self.layout[curr_x][curr_y + 3])) # straight,
-
-        elif(previous_direction == '>'):
-            if(len(self.get_fringes(curr_x, curr_y)) == 4):
-                #temp_exit_point.append(((curr_x + 1, curr_y + 2), self.layout[curr_x + 1][curr_y + 2])) # left, left lane
-                temp_exit_point.append(((curr_x + 1, curr_y - 3), self.layout[curr_x + 3][curr_y - 3])) # right, left lane
-            else:
-                temp_exit_point.append(((curr_x + 1, curr_y + 1), self.layout[curr_x + 1][curr_y + 1])) # left, left lane
-                temp_exit_point.append(((curr_x + 2, curr_y - 3), self.layout[curr_x + 2][curr_y - 3])) # right, left lane
-
-            temp_exit_point.append(((curr_x + 3, curr_y), self.layout[curr_x + 3][curr_y])) # straight,
-
-        elif(previous_direction == 'v'):
-            if(len(self.get_fringes(curr_x, curr_y)) == 4):
-                #temp_exit_point.append(((curr_x + 2, curr_y - 1), self.layout[curr_x + 2][curr_y - 1])) # left, left lane
-                temp_exit_point.append(((curr_x - 3, curr_y - 2), self.layout[curr_x - 3][curr_y - 2])) # right, left lane
-            else:
-                temp_exit_point.append(((curr_x + 1, curr_y - 1), self.layout[curr_x + 1][curr_y - 1])) # left, left lane
-                temp_exit_point.append(((curr_x - 4, curr_y - 2), self.layout[curr_x - 4][curr_y - 2])) # right, left lane
-
-            temp_exit_point.append(((curr_x, curr_y - 3), self.layout[curr_x][curr_y - 3])) # straight,
-
-        elif(previous_direction == '<'):
-            if(len(self.get_fringes(curr_x, curr_y)) == 4):
-                #temp_exit_point.append(((curr_x - 1, curr_y - 2), self.layout[curr_x - 1][curr_y - 2])) # left, left lane
-                temp_exit_point.append(((curr_x - 1, curr_y + 3), self.layout[curr_x - 3][curr_y + 3])) # right, left lane
-            else:
-                temp_exit_point.append(((curr_x - 1, curr_y - 1), self.layout[curr_x - 1][curr_y - 1])) # left, left lane
-                temp_exit_point.append(((curr_x - 2, curr_y + 3), self.layout[curr_x - 2][curr_y + 3])) # right, left lane
-
-            temp_exit_point.append(((curr_x - 3, curr_y), self.layout[curr_x - 3][curr_y])) # straight,
-
-        else:
-            print("unknown direction!")
-
-        exit_point = []
-        for ep in temp_exit_point:
-            state = ep[0]
-            if(self.is_road(state[0], state[1])):
-                exit_point.append(ep)
-
-        return exit_point
