@@ -134,7 +134,7 @@ class MapGenerator:
                     # 4. Go straight
                     '^': [(-1, 1), (4, 4), (4, 3), (0, 5)],
                     '>': [(1, 1), (4, -4), (3, -4), (5, 0)],
-                    'v': [(1, -1), (-4, -4), (-4. -3), (0, -5)],
+                    'v': [(1, -1), (-4, -4), (-4, -3), (0, -5)],
                     '<': [(-1, -1), (-4, 4), (-3, 4), (-5, 0)]
                 }
         elif(intersection_type == INTERSECTION["AVE_ST"]):
@@ -193,7 +193,7 @@ class MapGenerator:
             }
 
         # Defensive programming: Check whether the given previous_direction is one of four possible directions
-        if possible_exit_deltas.has_key(previous_direction):
+        if previous_direction in possible_exit_deltas:
             for possible_exit_delta in possible_exit_deltas[previous_direction]:
                 delta_x = possible_exit_delta[0]
                 delta_y = possible_exit_delta[1]
