@@ -1,4 +1,5 @@
 from road_network_model.constant import GRID_HEIGHT, LAYOUT_FILENAME, GRID_WIDTH, INTERSECTION
+import math
 
 # Legends
 # Directions
@@ -104,6 +105,28 @@ class MapGenerator:
         else:
             return False
 
+    def rotate_possible_exit_deltas(self, possible_exit_deltas, previous_direction, intersection_type):
+        # No rotation is needed for single lane
+        if intersection_type == INTERSECTION["ALL_LA"]:
+            return possible_exit_deltas
+        # Positive degree is counter-clockwise
+        degree = 0
+        if (previous_direction == '<'):
+            degree = math.pi / 2
+        if (previous_direction == 'v'):
+            degree = math.pi
+        if (previous_direction == '>'):
+            degree = 3 * math.pi / 2
+        # Apply rotation matrix to all elements inside possible_exit_deltas
+        updated_exit_deltas = []
+        for possible_exit_delta in possible_exit_deltas:
+            current_x = possible_exit_delta[0]
+            current_y = possible_exit_delta[1]
+            x = (current_x * int(math.cos(degree))) - (current_y * int(math.sin(degree)))
+            y = (current_x * int(math.sin(degree))) + (current_y * int(math.cos(degree)))
+            updated_exit_deltas.append((x,y))
+        return updated_exit_deltas
+
     def get_exit_point(self, current_pos, previous_direction, intersection_type):
         exit_points = []
         current_x = current_pos[0]
@@ -111,96 +134,51 @@ class MapGenerator:
         number_of_fringes = len(self.get_fringes(current_x, current_y))
 
         if(intersection_type == INTERSECTION["AVE_AVE"]):
-            # Right Lane (Inner Lane)
-            if number_of_fringes == 4:
-                possible_exit_deltas = {
-                    # 4 possibilities for each previous_direction:
-                    # 1. Turn left, take right lane
-                    # 2. Turn right, take left lane
-                    # 3. Turn right, take right lane
-                    # 4. Go straight
-                    '^': [(-2, 2), (3, 4), (3, 3), (0, 5)],
-                    '>': [(2, 2), (4, -3), (3, -3), (5, 0)],
-                    'v': [(2, -2), (-3, -4), (-3, -3), (0, -5)],
-                    '<': [(-2, -2), (-4, 3), (-3, 3), (-5, 0)]
-                }
-            # Left Lane (Outer Lane)
-            else:
-                possible_exit_deltas = {
-                    # 4 possibilities for each previous_direction:
-                    # 1. Turn left, take left lane
-                    # 2. Turn right, take left lane
-                    # 3. Turn right, take right lane
-                    # 4. Go straight
-                    '^': [(-1, 1), (4, 4), (4, 3), (0, 5)],
-                    '>': [(1, 1), (4, -4), (3, -4), (5, 0)],
-                    'v': [(1, -1), (-4, -4), (-4, -3), (0, -5)],
-                    '<': [(-1, -1), (-4, 4), (-3, 4), (-5, 0)]
-                }
-        elif(intersection_type == INTERSECTION["AVE_ST"]):
-            # Right Lane (Inner Lane)
-            if number_of_fringes == 4:
-                possible_exit_deltas = {
-                    # 3 possibilities for each previous_direction: turn left, turn right, or go straight
-                    '^': [(-2, 1), (3, 2), (0, 3)],
-                    '>': [(1, 2), (2, -3), (3, 0)],
-                    'v': [(2, -1), (-3, -2), (0, -3)],
-                    '<': [(-1, -2), (-2, 3), (-3, 0)]
-                }
-            # Left Lane (Outer Lane)
-            else:
-                possible_exit_deltas = {
-                    # 3 possibilities for each previous_direction: turn left, turn right, or go straight
-                    '^': [(-1, 1), (4, 2), (0, 3)],
-                    '>': [(1, 1), (2, -4), (3, 0)],
-                    'v': [(1, -1), (-4, -2), (0, -3)],
-                    '<': [(-1, -1), (-2, 4), (-3, 0)]
-                }
-        elif(intersection_type == INTERSECTION["ST_ST"]):
-            possible_exit_deltas = {
-                # 3 possibilities for each previous_direction: turn left, turn right, or go straight
-                '^': [(-1, 1), (2, 2), (0, 3)],
-                '>': [(1, 1), (2, -2), (3, 0)],
-                'v': [(1, -1), (-2, -2), (0, -3)],
-                '<': [(-1, -1), (-2, 2), (-3, 0)]
-            }
-        elif(intersection_type == INTERSECTION["ST_AVE"]):
-            possible_exit_deltas = {
-                # 5 possibilities for each previous_direction:
+            if number_of_fringes == 4: # Inner Lane
+                # 4 possibilities for each previous_direction:
+                # 1. Turn left, take right lane
+                # 2. Turn right, take left lane
+                # 3. Turn right, take right lane
+                # 4. Go straight
+                possible_exit_deltas = [(-2, 2), (3, 4), (3, 3), (0, 5)]
+            else: # Outer Lane
+                # 4 possibilities for each previous_direction:
                 # 1. Turn left, take left lane
-                # 2. Turn left, take right lane
-                # 3. Turn right, take left lane
-                # 4. Turn right, take right lane
-                # 5. Go straight
-                '^': [(-1, 1), (-1, 2), (2, 4), (2, 3), (0, 5)],
-                '>': [(1, 1), (2, 1), (4, -2), (3, -2), (5, 0)],
-                'v': [(1, -1), (1, -2), (-2, -4), (-2, -3), (0, -5)],
-                '<': [(-1, -1), (-2, -1), (-4, 2), (-3, 2), (-5, 0)]
-            }
+                # 2. Turn right, take left lane
+                # 3. Turn right, take right lane
+                # 4. Go straight
+                possible_exit_deltas = [(-1, 1), (4, 4), (4, 3), (0, 5)]
+        elif(intersection_type == INTERSECTION["AVE_ST"]):
+            if number_of_fringes == 4: # Inner Lane
+                # 3 possibilities for each previous_direction: turn left, turn right, or go straight
+                possible_exit_deltas = [(-2, 1), (3, 2), (0, 3)]
+            else: # Outer Lane
+                # 3 possibilities for each previous_direction: turn left, turn right, or go straight
+                possible_exit_deltas = [(-1, 1), (4, 2), (0, 3)]
+        elif(intersection_type == INTERSECTION["ST_ST"]):
+            # 3 possibilities for each previous_direction: turn left, turn right, or go straight
+            possible_exit_deltas = [(-1, 1), (2, 2), (0, 3)]
+        elif(intersection_type == INTERSECTION["ST_AVE"]):
+            # 5 possibilities for each previous_direction:
+            # 1. Turn left, take left lane
+            # 2. Turn left, take right lane
+            # 3. Turn right, take left lane
+            # 4. Turn right, take right lane
+            # 5. Go straight
+            possible_exit_deltas = [(-1, 1), (-1, 2), (2, 4), (2, 3), (0, 5)]
         elif(intersection_type == INTERSECTION["ALL_LA"]):
-            possible_exit_deltas = {
-                '^': [(1, 0), (-1, 0), (0, 1), (0, -1)],
-                '>': [(1, 0), (-1, 0), (0, 1), (0, -1)],
-                'v': [(1, 0), (-1, 0), (0, 1), (0, -1)],
-                '<': [(1, 0), (-1, 0), (0, 1), (0, -1)]
-            }
+            possible_exit_deltas = [(1, 0), (-1, 0), (0, 1), (0, -1)]
         else:
-            possible_exit_deltas = {
-                '^': [],
-                '>': [],
-                'v': [],
-                '<': []
-            }
-
+            possible_exit_deltas = []
         # Defensive programming: Check whether the given previous_direction is one of four possible directions
-        if previous_direction in possible_exit_deltas:
-            for possible_exit_delta in possible_exit_deltas[previous_direction]:
-                delta_x = possible_exit_delta[0]
-                delta_y = possible_exit_delta[1]
-                x = current_x + delta_x
-                y = current_y + delta_y
-                if x >= 0 and y >= 0 and x < GRID_WIDTH and y < GRID_HEIGHT:
-                    if (self.is_road(x, y)):
-                        exit_points.append(((x, y), self.layout[x][y]))
+        rotated_possible_exit_deltas = self.rotate_possible_exit_deltas(possible_exit_deltas, previous_direction, intersection_type)
+        for possible_exit_delta in rotated_possible_exit_deltas:
+            delta_x = possible_exit_delta[0]
+            delta_y = possible_exit_delta[1]
+            x = current_x + delta_x
+            y = current_y + delta_y
+            if x >= 0 and y >= 0 and x < GRID_WIDTH and y < GRID_HEIGHT:
+                if (self.is_road(x, y)):
+                    exit_points.append(((x, y), self.layout[x][y]))
 
         return exit_points
