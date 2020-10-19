@@ -1,6 +1,7 @@
 from mesa import Agent
 from road_network_model.constant import DIRECTION, CAR_STATE, GRID_HEIGHT, GRID_WIDTH
 import math
+from road_network_model.util import get_euclidean_distance
 
 class Car(Agent):
     X_COOR = 0
@@ -12,7 +13,6 @@ class Car(Agent):
                 source_coor,
                 destination_coor,
                 car_direction,
-                max_speed,
                 car_state,
                 model):
         super().__init__(unique_id,model)
@@ -23,7 +23,6 @@ class Car(Agent):
         self.exit_direction = car_direction
         self.current_direction = car_direction
         self.current_state = car_state
-        self.max_speed = max_speed
         self.next_coor = (0,0)
         self.next_state = None
 
@@ -36,13 +35,6 @@ class Car(Agent):
                         True) # True = includes centre
 
         return neighbors
-    
-    def getCrowDistance(self, coor1, coor2):
-        distance = math.sqrt(
-            ((coor1[self.X_COOR]-coor2[self.X_COOR]) **2) + ((coor1[self.Y_COOR]-coor2[self.Y_COOR]) **2)
-            )
-
-        return distance
 
     # SimultaneousActivation required two methods: step and advance
     def step(self):
@@ -52,8 +44,9 @@ class Car(Agent):
         layout = self.model.map.get_layout()
         new_direction = layout[self.current_coor[0]][self.current_coor[1]]
         
-        test = self.model.map.get_exit_point((46, 2),">",layout[46][2])
-        print("test: ", test)
+        #x, y = 47, 10
+        test = self.model.map.get_exit_point((self.current_coor[0], self.current_coor[1]),"^",new_direction)
+        #print("test: ", test)
 
         #print("new direction: ", new_direction)
         #print("exit dir: ", self.exit_direction)
@@ -66,7 +59,7 @@ class Car(Agent):
             #print("new_direction ", self.current_coor, " : ", new_direction)
             self.current_direction = new_direction
             #new_direction = self.current_direction
-        
+
         # get successing location after action
         if layout[self.current_coor[0]][self.current_coor[1]] == 'T':
             # should find the shortest path to destination, but for now simplify using distance measurements
@@ -78,15 +71,15 @@ class Car(Agent):
                 #print(direction)
                 temp_x = self.current_coor[0] + DIRECTION[direction][0]
                 temp_y = self.current_coor[1] + DIRECTION[direction][1]
-                
-                newDist = self.getCrowDistance((temp_x, temp_y), self.destination_coor)
+
+                newDist =  < shget_euclidean_distance((temp_x, temp_y), self.destination_coor)
                 if newDist < shortestDist:
                     shortestDist = newDist
                     best_action = direction
 
                     new_x = temp_x
                     new_y = temp_y
-            
+
             new_direction = best_action
             self.current_direction = new_direction
 
@@ -160,3 +153,17 @@ class Residence(Agent):
         super().__init__(unique_id, model)
         self.pos = pos
         self.model = model
+
+class TrafficLight(Agent):
+    def __init__(self, unique_id, pos, model, color):
+        super().__init__(unique_id, model)
+        self.pos = pos
+        self.model = model
+        self.color = color
+
+    def step(self):
+        print("hello!") ## wait...
+
+    def advance(self):
+        self.current_coor = self.next_coor
+        self.model.grid.move_agent(self, self.next_coor)

@@ -14,6 +14,11 @@ NUMBER_OF_CARS = 1
 
 LAYOUT_FILENAME = "road_network_model/layouts/map2_100x100.layout"
 
+COLOR = {
+    "dark_grey":"#333333",
+    "light_grey":"#ECECEC"
+}
+
 # Directions (based on Von Neumann Neighbour)
 # Dictionary of [x,y] vector
 DIRECTION = {
