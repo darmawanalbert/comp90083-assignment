@@ -48,12 +48,14 @@ class Car(Agent):
         neighbors = self.neighbors()
         new_direction = layout[self.current_coor[0]][self.current_coor[1]]
 
+        new_x = self.current_coor[0]
+        new_y = self.current_coor[1]
         # Determine Car direction
         # Inside a Office / Residence / Entertaint
         if new_direction in BUILDING:
             new_direction = self.exit_direction
-            next_coor_x = self.current_coor[0] + DIRECTION[new_direction][0]
-            next_coor_y = self.current_coor[1] + DIRECTION[new_direction][1]
+            new_x = self.current_coor[0] + DIRECTION[new_direction][0]
+            new_y = self.current_coor[1] + DIRECTION[new_direction][1]
             self.current_direction = new_direction
         # Encounter an intersection
         elif new_direction in INTERSECTION_SIGN:

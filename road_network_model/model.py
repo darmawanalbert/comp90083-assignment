@@ -103,12 +103,12 @@ class RoadNetworkModel(Model):
             # Randomising car sources
             random_position = initial_car_position.pop()
 
-            source_x = 48
-            source_y = 10
+            # source_x = 48
+            # source_y = 10
             # UNCOMMENT LATER
-            # source_x = random_position[0]
+            source_x = random_position[0]
             #print(source_x)
-            # source_y = random_position[1]
+            source_y = random_position[1]
             #print(source_y)
 
             # Randomising car destinations
