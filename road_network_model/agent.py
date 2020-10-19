@@ -69,12 +69,12 @@ class Car(Agent):
                     shortest_distance = newDist
                     shortest_exit_point = exit_point[0]
 
-            print("exit_points: ", exit_points, ", shortest_exit_point: ", shortest_exit_point)
+            #print("exit_points: ", exit_points, ", shortest_exit_point: ", shortest_exit_point)
             self.shortest_exit_point = shortest_exit_point
 
-            print("self.current_direction:", self.current_direction, ", self.current_coor:", self.current_coor)
-            print("layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]]:",layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]])
-            print("self.shortest_exit_point: ", self.shortest_exit_point)
+            #print("self.current_direction:", self.current_direction, ", self.current_coor:", self.current_coor)
+            #print("layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]]:",layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]])
+            #print("self.shortest_exit_point: ", self.shortest_exit_point)
 
             local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
 
@@ -86,7 +86,7 @@ class Car(Agent):
                 new_y = self.current_coor[1]
 
             self.next_coor = (new_x, new_y)
-            print("local_current_direction: ", local_current_direction)
+            #print("local_current_direction: ", local_current_direction)
 
         # Inside a Road
         elif new_direction == "x":
@@ -100,7 +100,7 @@ class Car(Agent):
                 new_y = self.current_coor[1]
 
             self.next_coor = (new_x, new_y)
-            print("local_current_direction: ", local_current_direction)
+            #print("local_current_direction: ", local_current_direction)
 
         else:
             self.current_direction = new_direction

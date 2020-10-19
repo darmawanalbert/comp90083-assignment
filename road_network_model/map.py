@@ -127,7 +127,7 @@ class MapGenerator:
         curr_y = current_pos[1]
         if(previous_direction == '^'):
             if(len(self.get_fringes(curr_x, curr_y)) == 4):
-                temp_exit_point.append(((curr_x - 2, curr_y + 1), self.layout[curr_x - 2][curr_y + 1])) # left, left lane
+                #temp_exit_point.append(((curr_x - 2, curr_y + 1), self.layout[curr_x - 2][curr_y + 1])) # left, left lane
                 temp_exit_point.append(((curr_x - 2, curr_y + 2), self.layout[curr_x - 2][curr_y + 2])) # left, right lane
 
                 temp_exit_point.append(((curr_x + 3, curr_y + 3), self.layout[curr_x + 3][curr_y + 3])) # right, left lane
@@ -143,7 +143,7 @@ class MapGenerator:
 
         elif(previous_direction == '>'):
             if(len(self.get_fringes(curr_x, curr_y)) == 4):
-                temp_exit_point.append(((curr_x + 1, curr_y + 2), self.layout[curr_x + 1][curr_y + 2])) # left, left lane
+                #temp_exit_point.append(((curr_x + 1, curr_y + 2), self.layout[curr_x + 1][curr_y + 2])) # left, left lane
                 temp_exit_point.append(((curr_x + 2, curr_y + 2), self.layout[curr_x + 2][curr_y + 2])) # left, right lane
 
                 temp_exit_point.append(((curr_x + 3, curr_y - 3), self.layout[curr_x + 3][curr_y - 3])) # right, left lane
@@ -160,13 +160,13 @@ class MapGenerator:
 
         elif(previous_direction == 'v'):
             if(len(self.get_fringes(curr_x, curr_y)) == 4):
-                temp_exit_point.append(((curr_x + 2, curr_y - 1), self.layout[curr_x + 2][curr_y - 1])) # left, left lane
+                #temp_exit_point.append(((curr_x + 2, curr_y - 1), self.layout[curr_x + 2][curr_y - 1])) # left, left lane
                 temp_exit_point.append(((curr_x + 2, curr_y - 2), self.layout[curr_x + 2][curr_y - 2])) # left, right lane
 
                 temp_exit_point.append(((curr_x - 3, curr_y - 3), self.layout[curr_x - 3][curr_y - 3])) # right, left lane
                 temp_exit_point.append(((curr_x - 3, curr_y - 4), self.layout[curr_x - 3][curr_y - 4])) # right, right lane
             else:
-                temp_exit_point.append(((curr_x + 1, curr_y - 1), self.layout[curr_x + 1][curr_y - 1])) # left, left lane
+                #temp_exit_point.append(((curr_x + 1, curr_y - 1), self.layout[curr_x + 1][curr_y - 1])) # left, left lane
                 temp_exit_point.append(((curr_x + 1, curr_y - 2), self.layout[curr_x + 1][curr_y - 2])) # left, right lane
 
                 temp_exit_point.append(((curr_x - 4, curr_y - 3), self.layout[curr_x - 4][curr_y - 3])) # right, left lane
@@ -176,7 +176,7 @@ class MapGenerator:
 
         elif(previous_direction == '<'):
             if(len(self.get_fringes(curr_x, curr_y)) == 4):
-                temp_exit_point.append(((curr_x - 1, curr_y - 2), self.layout[curr_x - 1][curr_y - 2])) # left, left lane
+                #temp_exit_point.append(((curr_x - 1, curr_y - 2), self.layout[curr_x - 1][curr_y - 2])) # left, left lane
                 temp_exit_point.append(((curr_x - 2, curr_y - 2), self.layout[curr_x - 2][curr_y - 2])) # left, right lane
 
                 temp_exit_point.append(((curr_x - 3, curr_y + 3), self.layout[curr_x - 3][curr_y + 3])) # right, left lane
@@ -208,7 +208,7 @@ class MapGenerator:
         curr_y = current_pos[1]
         if(previous_direction == '^'):
             if(len(self.get_fringes(curr_x, curr_y)) == 4):
-                temp_exit_point.append(((curr_x - 2, curr_y + 1), self.layout[curr_x - 2][curr_y + 1])) # left, left lane
+                #temp_exit_point.append(((curr_x - 2, curr_y + 1), self.layout[curr_x - 2][curr_y + 1])) # left, left lane
                 temp_exit_point.append(((curr_x + 3, curr_y + 2), self.layout[curr_x + 3][curr_y + 2])) # right, left lane
             else:
                 temp_exit_point.append(((curr_x - 1, curr_y + 1), self.layout[curr_x - 1][curr_y + 1])) # left, left lane
@@ -218,7 +218,7 @@ class MapGenerator:
 
         elif(previous_direction == '>'):
             if(len(self.get_fringes(curr_x, curr_y)) == 4):
-                temp_exit_point.append(((curr_x + 1, curr_y + 2), self.layout[curr_x + 1][curr_y + 2])) # left, left lane
+                #temp_exit_point.append(((curr_x + 1, curr_y + 2), self.layout[curr_x + 1][curr_y + 2])) # left, left lane
                 temp_exit_point.append(((curr_x + 1, curr_y - 3), self.layout[curr_x + 3][curr_y - 3])) # right, left lane
             else:
                 temp_exit_point.append(((curr_x + 1, curr_y + 1), self.layout[curr_x + 1][curr_y + 1])) # left, left lane
@@ -228,7 +228,7 @@ class MapGenerator:
 
         elif(previous_direction == 'v'):
             if(len(self.get_fringes(curr_x, curr_y)) == 4):
-                temp_exit_point.append(((curr_x + 2, curr_y - 1), self.layout[curr_x + 2][curr_y - 1])) # left, left lane
+                #temp_exit_point.append(((curr_x + 2, curr_y - 1), self.layout[curr_x + 2][curr_y - 1])) # left, left lane
                 temp_exit_point.append(((curr_x - 3, curr_y - 2), self.layout[curr_x - 3][curr_y - 2])) # right, left lane
             else:
                 temp_exit_point.append(((curr_x + 1, curr_y - 1), self.layout[curr_x + 1][curr_y - 1])) # left, left lane
@@ -238,7 +238,7 @@ class MapGenerator:
 
         elif(previous_direction == '<'):
             if(len(self.get_fringes(curr_x, curr_y)) == 4):
-                temp_exit_point.append(((curr_x - 1, curr_y - 2), self.layout[curr_x - 1][curr_y - 2])) # left, left lane
+                #temp_exit_point.append(((curr_x - 1, curr_y - 2), self.layout[curr_x - 1][curr_y - 2])) # left, left lane
                 temp_exit_point.append(((curr_x - 1, curr_y + 3), self.layout[curr_x - 3][curr_y + 3])) # right, left lane
             else:
                 temp_exit_point.append(((curr_x - 1, curr_y - 1), self.layout[curr_x - 1][curr_y - 1])) # left, left lane

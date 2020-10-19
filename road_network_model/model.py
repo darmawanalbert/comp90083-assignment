@@ -103,7 +103,7 @@ class RoadNetworkModel(Model):
             # Randomising car sources
             random_position = initial_car_position.pop()
 
-            source_x = 47
+            source_x = 48
             source_y = 10
             # UNCOMMENT LATER
             # source_x = random_position[0]
