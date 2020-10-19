@@ -170,7 +170,7 @@ class MapGenerator:
             possible_exit_deltas = [(1, 0), (-1, 0), (0, 1), (0, -1)]
         else:
             possible_exit_deltas = []
-        # Defensive programming: Check whether the given previous_direction is one of four possible directions
+
         rotated_possible_exit_deltas = self.rotate_possible_exit_deltas(possible_exit_deltas, previous_direction, intersection_type)
         for possible_exit_delta in rotated_possible_exit_deltas:
             delta_x = possible_exit_delta[0]
