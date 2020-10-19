@@ -3,11 +3,11 @@ from mesa.space import MultiGrid
 from mesa.time import SimultaneousActivation
 from mesa.datacollection import DataCollector
 
-from road_network_model.agent import Car, Road, Office, Residence, Entertaint
+from road_network_model.agent import Car, Road, Office, Residence, Entertaint, TrafficLight
 from road_network_model.map import MapGenerator
-from road_network_model.constant import DIRECTION, CAR_STATE, DAY
+from road_network_model.constant import DIRECTION, CAR_STATE, DAY, COLOR
 
-from road_network_model.util import getCrowDistance
+from road_network_model.util import get_euclidean_distance
 
 import math
 
@@ -42,24 +42,29 @@ class RoadNetworkModel(Model):
         for i in range(len(officePosition)):
             office = Office(i, officePosition[i], self)
             self.grid.place_agent(office, officePosition[i])
-        
+
         ## generate residence
         residencePosition = self.map.get_residence_position()
         for i in range(len(residencePosition)):
             residence = Residence(i, residencePosition[i], self)
             self.grid.place_agent(residence, residencePosition[i])
-        
+
         ## generate entertaint
         entertaintPosition = self.map.get_entertaint_position()
         for i in range(len(entertaintPosition)):
             entertaint = Entertaint(i, entertaintPosition[i], self)
             self.grid.place_agent(entertaint, entertaintPosition[i])
 
+        ## generate traffic light
+        trafficLightPosition = self.map.get_traffic_light_position()
+        for i in range(len(trafficLightPosition)):
+            trafficLight = TrafficLight(i, trafficLightPosition[i], self, COLOR["dark_grey"])
+            self.grid.place_agent(trafficLight, trafficLightPosition[i])
+
         # Get source and destination lists
         source_list = self.map.get_residence_position()
         office = self.map.get_office_position()
         entertainment = self.map.get_entertaint_position()
-        #print(entertainment)
 
         # Create destination list based on weekday/weekend proportion
         proportion_of_office_workers = DAY[self.day]
@@ -76,22 +81,19 @@ class RoadNetworkModel(Model):
         while shopper <= number_of_shopper:
             entertainment_list.append(entertainment[self.random.randint(0, len(entertainment) - 1)])
             shopper += 1
-        
-        #print(office_list)
-        #print(entertainment_list)
-        
+
         """# Create a set of initial car positions
         initial_car_position = set() # set? so no two cars can start from the same position?
         while len(initial_car_position) != number_of_cars:
             random_road_index = self.random.randint(0, len(roadPosition) - 1)
             initial_car_position.add(random_road_index)"""
-        
+
         initial_car_position = []  # list or set? if set, we might have more cars than sources
         while len(initial_car_position) != number_of_cars:
             random_road_index = self.random.randint(0, len(source_list) - 1)
             initial_car_position.append(source_list[random_road_index])
         #print(initial_car_position)
-        
+
         layout = self.map.get_layout()
         for i in range (number_of_cars):
             plate_number_oddity = self.random.randint(0, 1)
@@ -100,13 +102,13 @@ class RoadNetworkModel(Model):
             source_y = roadPosition[current_index][1]"""
             # Randomising car sources
             random_position = initial_car_position.pop()
-            
-            source_x = 46
-            source_y = 2
+
+            # source_x = 48
+            # source_y = 10
             # UNCOMMENT LATER
-            # source_x = random_position[0]
+            source_x = random_position[0]
             #print(source_x)
-            # source_y = random_position[1]
+            source_y = random_position[1]
             #print(source_y)
 
             # Randomising car destinations
@@ -129,34 +131,28 @@ class RoadNetworkModel(Model):
                     random_position = office_list.pop()
                     destination_x = random_position[0]
                     destination_y = random_position[0]
-            
-            max_speed = 100
-            stateFringes = self.map.get_successors(source_x, source_y)
-            shortestDist = float("inf")
+
+            stateFringes = self.map.get_fringes(source_x, source_y)
+            shortest_distance = float("inf")
             car_direction = stateFringes[0][1]
             for stateFringe in stateFringes:
                 current_direction =  stateFringe[1] # "^" "v" ">" "<"
-                #print(stateFringe[0])
                 if current_direction in DIRECTION:
                     temp_x = stateFringe[0][0] + DIRECTION[current_direction][0]
                     temp_y = stateFringe[0][1] + DIRECTION[current_direction][1]
 
-                    newDist = getCrowDistance((temp_x, temp_y), (destination_x, destination_y))
-                    if newDist < shortestDist:
-                        shortestDist = newDist
+                    newDist = get_euclidean_distance((temp_x, temp_y), (destination_x, destination_y))
+                    if newDist < shortest_distance:
+                        shortest_distance = newDist
                         car_direction = current_direction
-                        #print((source_x, source_y), car_direction)
 
-            #print(car_direction)
             car_state = "IDLE"
 
             car = Car(i, plate_number_oddity,
                         (source_x,source_y),
                         (destination_x,destination_y),
                         car_direction,
-                        max_speed,
                         car_state, self)
-            #print("car direction: ", car_direction)
 
             self.grid.place_agent(car, (source_x,source_y))
             self.schedule.add(car)
@@ -164,4 +160,4 @@ class RoadNetworkModel(Model):
     def step(self):
         self.schedule.step()
         self.tick += 1
-        #print(self.tick)
+

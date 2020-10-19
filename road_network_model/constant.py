@@ -10,9 +10,14 @@ GRID_WIDTH = 100
 GRID_HEIGHT = 100
 
 # Initialization Constant
-NUMBER_OF_CARS = 1
+NUMBER_OF_CARS = 5
 
 LAYOUT_FILENAME = "road_network_model/layouts/map2_100x100.layout"
+
+COLOR = {
+    "dark_grey":"#333333",
+    "light_grey":"#ECECEC"
+}
 
 # Directions (based on Von Neumann Neighbour)
 # Dictionary of [x,y] vector
@@ -45,4 +50,12 @@ INTERSECTION = {
     "ST_AVE": '+',
     "ST_ST": '#',
     "ALL_LA": '*'
+}
+
+INTERSECTION_SIGN = ['T','t','+','#','*']
+
+BUILDING = {
+    "O": 'OFFICE',
+    "R": 'RESIDENCE',
+    "E": 'ENTERTAINMENT'
 }
