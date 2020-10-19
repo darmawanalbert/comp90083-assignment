@@ -105,21 +105,66 @@ class MapGenerator:
             return False
 
     def get_exit_point(self, current_pos, previous_direction, intersection_type):
-        exit_point = []
-        if(intersection_type == INTERSECTION["AVE_AVE"]): ## AxA
-            exit_point = self.avenue_x_avenue(current_pos, previous_direction)
-        elif(intersection_type == INTERSECTION["AVE_ST"]): ## AxS
-            exit_point = self.avenue_x_street(current_pos, previous_direction)
-        elif(intersection_type == INTERSECTION["ST_ST"]): ## SxS
-            exit_point = self.street_x_street(current_pos, previous_direction)
-        elif(intersection_type == INTERSECTION["ST_AVE"]): ## SxA
-            exit_point = self.street_x_avenue(current_pos, previous_direction)
-        elif(intersection_type == INTERSECTION["ALL_LA"]): ## all type x Lane
-            exit_point = self.all_x_lane(current_pos, previous_direction)
-        else:
-            print("unknown intersection type")
+        exit_points = []
+        current_x = current_pos[0]
+        current_y = current_pos[1]
 
-        return exit_point
+        if(intersection_type == INTERSECTION["AVE_AVE"]): ## AxA
+            possible_exit_deltas = {
+                '^': [],
+                '>': [],
+                'v': [],
+                '<': []
+            }
+        elif(intersection_type == INTERSECTION["AVE_ST"]): ## AxS
+            possible_exit_deltas = {
+                '^': [],
+                '>': [],
+                'v': [],
+                '<': []
+            }
+        elif(intersection_type == INTERSECTION["ST_ST"]): ## SxS
+            possible_exit_deltas = {
+                # 3 possibilities for each previous_direction: turn left, turn right, or go straight
+                '^': [(-1, 1), (2, 2), (0, 3)],
+                '>': [(1, 1), (2, -2), (3, 0)],
+                'v': [(1, -1), (-2, -2), (0, -3)],
+                '<': [(-1, -1), (-2, 2), (-3, 0)]
+            }
+        elif(intersection_type == INTERSECTION["ST_AVE"]): ## SxA
+            possible_exit_deltas = {
+                '^': [],
+                '>': [],
+                'v': [],
+                '<': []
+            }
+        elif(intersection_type == INTERSECTION["ALL_LA"]): ## all type x Lane
+            possible_exit_deltas = {
+                '^': [(1, 0), (-1, 0), (0, 1), (0, -1)],
+                '>': [(1, 0), (-1, 0), (0, 1), (0, -1)],
+                'v': [(1, 0), (-1, 0), (0, 1), (0, -1)],
+                '<': [(1, 0), (-1, 0), (0, 1), (0, -1)]
+            }
+        else:
+            possible_exit_deltas = {
+                '^': [],
+                '>': [],
+                'v': [],
+                '<': []
+            }
+
+        # Defensive programming: Check whether the given previous_direction is one of four possible directions
+        if possible_exit_deltas.has_key(previous_direction):
+            for possible_exit_delta in possible_exit_deltas[previous_direction]:
+                delta_x = possible_exit_delta[0]
+                delta_y = possible_exit_delta[1]
+                x = current_x + delta_x
+                y = current_y + delta_y
+                if x >= 0 and y >= 0 and x < GRID_WIDTH and y < GRID_HEIGHT:
+                    if (self.is_road(x, y)):
+                        exit_points.append(((x, y), self.layout[x][y]))
+
+        return exit_points
 
     def avenue_x_avenue(self, current_pos, previous_direction):
         temp_exit_point = []
@@ -257,48 +302,6 @@ class MapGenerator:
 
         return exit_point
 
-    def street_x_street(self, current_pos, previous_direction):
-        temp_exit_point = []
-        curr_x = current_pos[0]
-        curr_y = current_pos[1]
-        if(previous_direction == '^'):
-            temp_exit_point.append(((curr_x - 1, curr_y + 1), self.layout[curr_x - 1][curr_y + 1])) # left, left lane
-            temp_exit_point.append(((curr_x + 2, curr_y + 3), self.layout[curr_x + 2][curr_y + 3])) # right, left lane
-
-            temp_exit_point.append(((curr_x, curr_y + 3), self.layout[curr_x][curr_y + 3])) # straight,
-
-        elif(previous_direction == '>'):
-            temp_exit_point.append(((curr_x + 1, curr_y + 1), self.layout[curr_x + 1][curr_y + 1])) # left, left lane
-
-            temp_exit_point.append(((curr_x + 3, curr_y - 2), self.layout[curr_x + 3][curr_y - 2])) # right, left lane
-
-            temp_exit_point.append(((curr_x + 3, curr_y), self.layout[curr_x + 3][curr_y])) # straight,
-
-        elif(previous_direction == 'v'):
-            temp_exit_point.append(((curr_x + 1, curr_y - 1), self.layout[curr_x + 1][curr_y - 1])) # left, left lane
-
-            temp_exit_point.append(((curr_x - 2, curr_y - 3), self.layout[curr_x - 2][curr_y - 3])) # right, left lane
-
-            temp_exit_point.append(((curr_x, curr_y - 3), self.layout[curr_x][curr_y - 3])) # straight,
-
-        elif(previous_direction == '<'):
-            temp_exit_point.append(((curr_x - 1, curr_y - 1), self.layout[curr_x - 1][curr_y - 1])) # left, left lane
-
-            temp_exit_point.append(((curr_x - 3, curr_y + 2), self.layout[curr_x - 3][curr_y + 2])) # right, left lane
-
-            temp_exit_point.append(((curr_x - 3, curr_y), self.layout[curr_x - 3][curr_y])) # straight,
-
-        else:
-            print("unknown direction!")
-
-        exit_point = []
-        for ep in temp_exit_point:
-            state = ep[0]
-            if(self.is_road(state[0], state[1])):
-                exit_point.append(ep)
-
-        return exit_point
-
     def street_x_avenue(self, current_pos, previous_direction):
         temp_exit_point = []
         curr_x = current_pos[0]
@@ -349,21 +352,3 @@ class MapGenerator:
                 exit_point.append(ep)
 
         return exit_point
-
-    def all_x_lane(self, current_pos, previous_direction):
-        temp_exit_point = []
-        curr_x = current_pos[0]
-        curr_y = current_pos[1]
-        temp_exit_point.append(((curr_x + 1, curr_y), ">"))
-        temp_exit_point.append(((curr_x - 1, curr_y), "<"))
-        temp_exit_point.append(((curr_x, curr_y + 1), "^"))
-        temp_exit_point.append(((curr_x, curr_y - 1), "v"))
-
-        exit_point = []
-        for ep in temp_exit_point:
-            state = ep[0]
-            if(self.is_road(state[0], state[1])):
-                exit_point.append(ep)
-
-        return exit_point
-
