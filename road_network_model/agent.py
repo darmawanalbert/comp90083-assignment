@@ -60,40 +60,46 @@ class Car(Agent):
             current_pos = (self.current_coor[0], self.current_coor[1])
             intersection_type = layout[self.current_coor[0]][self.current_coor[1]]
             exit_points = map_instance.get_exit_point(current_pos, self.current_direction, intersection_type)
-            
+
             shortest_distance = float("inf")
             shortest_exit_point = ()
             for exit_point in exit_points:
-                newDist =  get_euclidean_distance(exit_point, self.current_coor)
+                newDist =  get_euclidean_distance(exit_point[0], self.current_coor)
                 if newDist < shortest_distance:
                     shortest_distance = newDist
-                    shortest_exit_point = exit_point
+                    shortest_exit_point = exit_point[0]
 
             print("exit_points: ", exit_points, ", shortest_exit_point: ", shortest_exit_point)
             self.shortest_exit_point = shortest_exit_point
 
+            print("self.current_direction:", self.current_direction, ", self.current_coor:", self.current_coor)
+            print("layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]]:",layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]])
+            print("self.shortest_exit_point: ", self.shortest_exit_point)
+
             local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
-            
-            new_x = self.current_coor[0] + DIRECTION[self.current_direction][0]
-            new_y = self.current_coor[1] + DIRECTION[self.current_direction][1]
+
+            new_x = self.current_coor[0] + DIRECTION[local_current_direction][0]
+            new_y = self.current_coor[1] + DIRECTION[local_current_direction][1]
             if new_x < 0 or new_x == GRID_WIDTH:
                 new_x = self.current_coor[0]
             if new_y < 0 or new_y == GRID_HEIGHT:
                 new_y = self.current_coor[1]
 
+            self.next_coor = (new_x, new_y)
             print("local_current_direction: ", local_current_direction)
 
         # Inside a Road
         elif new_direction == "x":
             local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
-            
-            new_x = self.current_coor[0] + DIRECTION[self.current_direction][0]
-            new_y = self.current_coor[1] + DIRECTION[self.current_direction][1]
+
+            new_x = self.current_coor[0] + DIRECTION[local_current_direction][0]
+            new_y = self.current_coor[1] + DIRECTION[local_current_direction][1]
             if new_x < 0 or new_x == GRID_WIDTH:
                 new_x = self.current_coor[0]
             if new_y < 0 or new_y == GRID_HEIGHT:
                 new_y = self.current_coor[1]
 
+            self.next_coor = (new_x, new_y)
             print("local_current_direction: ", local_current_direction)
 
         else:
