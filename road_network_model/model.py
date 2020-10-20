@@ -3,7 +3,7 @@ from mesa.space import MultiGrid
 from mesa.time import SimultaneousActivation
 from mesa.datacollection import DataCollector
 
-from road_network_model.agent import Car, Road, Office, Residence, Entertaint, TrafficLight
+from road_network_model.agent import Car, Road, Office, Residence, Entertainment, TrafficLight
 from road_network_model.map import MapGenerator
 from road_network_model.constant import DIRECTION, CAR_STATE, DAY, COLOR
 
@@ -49,11 +49,11 @@ class RoadNetworkModel(Model):
             residence = Residence(i, residencePosition[i], self)
             self.grid.place_agent(residence, residencePosition[i])
 
-        ## generate entertaint
-        entertaintPosition = self.map.get_entertaint_position()
-        for i in range(len(entertaintPosition)):
-            entertaint = Entertaint(i, entertaintPosition[i], self)
-            self.grid.place_agent(entertaint, entertaintPosition[i])
+        ## generate entertainment
+        entertainmentPosition = self.map.get_entertainment_position()
+        for i in range(len(entertainmentPosition)):
+            entertainment = Entertainment(i, entertainmentPosition[i], self)
+            self.grid.place_agent(entertainment, entertainmentPosition[i])
 
         ## generate traffic light
         trafficLightPosition = self.map.get_traffic_light_position()
@@ -64,7 +64,7 @@ class RoadNetworkModel(Model):
         # Get source and destination lists
         source_list = self.map.get_residence_position()
         office = self.map.get_office_position()
-        entertainment = self.map.get_entertaint_position()
+        entertainment = self.map.get_entertainment_position()
 
         # Create destination list based on weekday/weekend proportion
         proportion_of_office_workers = DAY[self.day]

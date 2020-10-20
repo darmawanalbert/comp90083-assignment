@@ -51,7 +51,7 @@ class Car(Agent):
         new_x = self.current_coor[0]
         new_y = self.current_coor[1]
         # Determine Car direction
-        # Inside a Office / Residence / Entertaint
+        # Inside a Office / Residence / Entertainment
         if new_direction in BUILDING:
             new_direction = self.exit_direction
             new_x = self.current_coor[0] + DIRECTION[new_direction][0]
@@ -154,7 +154,7 @@ class Office(Agent):
         self.pos = pos
         self.model = model
 
-class Entertaint(Agent):
+class Entertainment(Agent):
     def __init__(self, unique_id, pos, model):
         super().__init__(unique_id, model)
         self.pos = pos

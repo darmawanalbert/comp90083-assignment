@@ -11,7 +11,7 @@ import math
 # Nodes
 # O : Office
 # R : Residence
-# E : Entertaint
+# E : Entertainment
 # _ : Nothing
 
 # Intersections
@@ -31,7 +31,7 @@ class MapGenerator:
         self.road = []
         self.offices = []
         self.residences = []
-        self.entertaints = []
+        self.entertainments = []
         self.traffic_light = []
         self.road_directions = ['<','>','^','v','x','t','T','+','#','*']
         self.traffic_light_sign = ['T','t','+','#']
@@ -56,7 +56,7 @@ class MapGenerator:
                 if(line.strip()[i] == 'R'):
                     self.residences.append((x, y))
                 if(line.strip()[i] == 'E'):
-                    self.entertaints.append((x, y))
+                    self.entertainments.append((x, y))
                 if(line.strip()[i] in self.traffic_light_sign):
                     self.traffic_light.append((x, y))
 
@@ -75,8 +75,8 @@ class MapGenerator:
     def get_residence_position(self):
         return self.residences
 
-    def get_entertaint_position(self):
-        return self.entertaints
+    def get_entertainment_position(self):
+        return self.entertainments
 
     def get_traffic_light_position(self):
         return self.traffic_light
