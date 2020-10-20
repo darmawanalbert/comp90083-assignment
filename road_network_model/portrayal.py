@@ -1,4 +1,4 @@
-from road_network_model.agent import Car, Road, Office, Residence, Entertaint, TrafficLight
+from road_network_model.agent import Car, Road, Office, Residence, Entertainment, TrafficLight
 
 def road_network_model_portrayal(agent):
     """
@@ -52,7 +52,7 @@ def road_network_model_portrayal(agent):
         portrayal["x"] = agent.pos[0]
         portrayal["y"] = agent.pos[1]
         portrayal["Filled"] = "true"
-    if type(agent) is Entertaint:
+    if type(agent) is Entertainment:
         portrayal["Shape"] = "rect"
         portrayal["Color"] = "green"
         portrayal["scale"] = 10
