@@ -10,7 +10,7 @@ GRID_WIDTH = 100
 GRID_HEIGHT = 100
 
 # Initialization Constant
-NUMBER_OF_CARS = 20
+NUMBER_OF_CARS = 5
 
 LAYOUT_FILENAME = "road_network_model/layouts/map2_100x100.layout"
 
