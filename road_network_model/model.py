@@ -107,7 +107,7 @@ class RoadNetworkModel(Model):
             # UNCOMMENT LATER
             source_x = random_position[0]
             #print(source_x)
-            # source_y = random_position[1]
+            source_y = random_position[1]
             #print(source_y)
 
             # Randomising car destinations
@@ -146,13 +146,18 @@ class RoadNetworkModel(Model):
                         car_direction = current_direction
 
             car_state = "IDLE"
+            departure_time = self.random.randint(0,5)
+            return_time = 1000
 
             car = Car(i, plate_number_oddity,
                         (source_x,source_y),
                         (destination_x,destination_y),
                         car_direction,
-                        car_state, self)
-
+                        car_state,
+                        departure_time,
+                        return_time,
+                        self)
+            
             self.grid.place_agent(car, (source_x,source_y))
             self.schedule.add(car)
 
