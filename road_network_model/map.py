@@ -1,16 +1,25 @@
 from road_network_model.constant import GRID_HEIGHT, LAYOUT_FILENAME, GRID_WIDTH, INTERSECTION
+import math
 
 # Legends
+# Directions
 # ^ : North
 # v : South
 # < : West
 # > : East
-# + : intersections
-# O : Office (nodes)
-# R : Residence (nodes)
-# E : Entertaint (nodes)
-# - : Nothing
 
+# Nodes
+# O : Office
+# R : Residence
+# E : Entertainment
+# _ : Nothing
+
+# Intersections
+# T : Avenue -> Avenue
+# t : Avenue -> Street
+# + : Street -> Avenue
+# # : Street -> Street
+# * : All Types -> Lane
 
 class MapGenerator:
 
@@ -22,8 +31,10 @@ class MapGenerator:
         self.road = []
         self.offices = []
         self.residences = []
-        self.entertaints = []
-        self.road_directions = ['<','>','^','v','+','x','t','T','+','#','*']
+        self.entertainments = []
+        self.traffic_light = []
+        self.road_directions = ['<','>','^','v','x','t','T','+','#','*']
+        self.traffic_light_sign = ['T','t','+','#']
         self.layout = []
         y = GRID_HEIGHT - 1
 
@@ -45,7 +56,9 @@ class MapGenerator:
                 if(line.strip()[i] == 'R'):
                     self.residences.append((x, y))
                 if(line.strip()[i] == 'E'):
-                    self.entertaints.append((x, y))
+                    self.entertainments.append((x, y))
+                if(line.strip()[i] in self.traffic_light_sign):
+                    self.traffic_light.append((x, y))
 
                 self.layout[x][y] = line.strip()[i]
 
@@ -62,31 +75,27 @@ class MapGenerator:
     def get_residence_position(self):
         return self.residences
 
-    def get_entertaint_position(self):
-        return self.entertaints
+    def get_entertainment_position(self):
+        return self.entertainments
+
+    def get_traffic_light_position(self):
+        return self.traffic_light
 
     def get_layout(self):
         return self.layout
-    
-    def get_successors(self, x, y):
 
-        #print("x: ", x, ", y: ", y)
-        
+    def get_fringes(self, x, y):
         state_fringes = []
         state_fringes.append(((x + 1, y), ">"))
         state_fringes.append(((x - 1, y), "<"))
         state_fringes.append(((x, y + 1), "^"))
         state_fringes.append(((x, y - 1), "v"))
-        
-        #print("state_fringes: ", state_fringes)
 
         result_next_state = []
         for state_fringe in state_fringes:
             if self.is_road(state_fringe[0][0], state_fringe[0][1]) == True:
                 result_next_state.append(state_fringe)
 
-        #print("result_next_state: ", result_next_state)
-        
         return result_next_state
 
     def is_road(self, x, y):
@@ -95,414 +104,81 @@ class MapGenerator:
             return True
         else:
             return False
-    
+
+    def rotate_possible_exit_deltas(self, possible_exit_deltas, previous_direction, intersection_type):
+        # No rotation is needed for single lane
+        if intersection_type == INTERSECTION["ALL_LA"]:
+            return possible_exit_deltas
+        # Positive degree is counter-clockwise
+        degree = 0
+        if (previous_direction == '<'):
+            degree = math.pi / 2
+        if (previous_direction == 'v'):
+            degree = math.pi
+        if (previous_direction == '>'):
+            degree = 3 * math.pi / 2
+        # Apply rotation matrix to all elements inside possible_exit_deltas
+        updated_exit_deltas = []
+        for possible_exit_delta in possible_exit_deltas:
+            current_x = possible_exit_delta[0]
+            current_y = possible_exit_delta[1]
+            x = (current_x * int(math.cos(degree))) - (current_y * int(math.sin(degree)))
+            y = (current_x * int(math.sin(degree))) + (current_y * int(math.cos(degree)))
+            updated_exit_deltas.append((x,y))
+        return updated_exit_deltas
+
     def get_exit_point(self, current_pos, previous_direction, intersection_type):
-        print("current_pos: ", current_pos, ", previous_direction: ", previous_direction, ", intersection_type: ", intersection_type)
-        exit_point = []
-        if(intersection_type == INTERSECTION["AVE_AVE"]): ## AxA
-            exit_point = self.avenue_x_avenue(current_pos, previous_direction)
-        elif(intersection_type == INTERSECTION["AVE_ST"]): ## AxS
-            exit_point = self.avenue_x_street(current_pos, previous_direction)
-        elif(intersection_type == INTERSECTION["ST_ST"]): ## SxS
-            exit_point = self.street_x_street(current_pos, previous_direction)
-        elif(intersection_type == INTERSECTION["ST_AVE"]): ## SxA
-            exit_point = self.street_x_avenue(current_pos, previous_direction)
-        elif(intersection_type == INTERSECTION["ALL_LA"]): ## all type x Lane
-            exit_point = self.all_x_lane(current_pos, previous_direction)
+        exit_points = []
+        current_x = current_pos[0]
+        current_y = current_pos[1]
+        number_of_fringes = len(self.get_fringes(current_x, current_y))
+
+        if(intersection_type == INTERSECTION["AVE_AVE"]):
+            if number_of_fringes == 4: # Inner Lane
+                # 4 possibilities for each previous_direction:
+                # 1. Turn left, take right lane
+                # 2. Turn right, take left lane
+                # 3. Turn right, take right lane
+                # 4. Go straight
+                possible_exit_deltas = [(-2, 2), (3, 4), (3, 3), (0, 5)]
+            else: # Outer Lane
+                # 4 possibilities for each previous_direction:
+                # 1. Turn left, take left lane
+                # 2. Turn right, take left lane
+                # 3. Turn right, take right lane
+                # 4. Go straight
+                possible_exit_deltas = [(-1, 1), (4, 4), (4, 3), (0, 5)]
+        elif(intersection_type == INTERSECTION["AVE_ST"]):
+            if number_of_fringes == 4: # Inner Lane
+                # 3 possibilities for each previous_direction: turn left, turn right, or go straight
+                possible_exit_deltas = [(-2, 1), (3, 2), (0, 3)]
+            else: # Outer Lane
+                # 3 possibilities for each previous_direction: turn left, turn right, or go straight
+                possible_exit_deltas = [(-1, 1), (4, 2), (0, 3)]
+        elif(intersection_type == INTERSECTION["ST_ST"]):
+            # 3 possibilities for each previous_direction: turn left, turn right, or go straight
+            possible_exit_deltas = [(-1, 1), (2, 2), (0, 3)]
+        elif(intersection_type == INTERSECTION["ST_AVE"]):
+            # 5 possibilities for each previous_direction:
+            # 1. Turn left, take left lane
+            # 2. Turn left, take right lane
+            # 3. Turn right, take left lane
+            # 4. Turn right, take right lane
+            # 5. Go straight
+            possible_exit_deltas = [(-1, 1), (-1, 2), (2, 4), (2, 3), (0, 5)]
+        elif(intersection_type == INTERSECTION["ALL_LA"]):
+            possible_exit_deltas = [(1, 0), (-1, 0), (0, 1), (0, -1)]
         else:
-            print("unknown intersection type")
-        
-        print("exit_point: ", exit_point)
-        return exit_point
-    
-    def avenue_x_avenue(self, current_pos, previous_direction):
-        temp_exit_point = []
-        curr_x = current_pos[0]
-        curr_y = current_pos[1]
-        if(previous_direction == '^'):
-            if(len(self.get_successors(curr_x, curr_y)) == 4):
-                temp_exit_point.append(((curr_x - 2, curr_y - 1), self.layout[curr_x - 2][curr_y - 1])) # left, left lane
-                temp_exit_point.append(((curr_x - 2, curr_y - 2), self.layout[curr_x - 2][curr_y - 2])) # left, right lane
-                
-                temp_exit_point.append(((curr_x + 3, curr_y - 3), self.layout[curr_x + 3][curr_y - 3])) # right, left lane
-                temp_exit_point.append(((curr_x + 3, curr_y - 4), self.layout[curr_x + 3][curr_y - 4])) # right, right lane
-                
-                temp_exit_point.append(((curr_x, curr_y - 4), self.layout[curr_x][curr_y - 4])) # straight,
-            else:
-                temp_exit_point.append(((curr_x - 1, curr_y - 1), self.layout[curr_x - 1][curr_y - 1])) # left, left lane
-                temp_exit_point.append(((curr_x - 1, curr_y - 2), self.layout[curr_x - 1][curr_y - 2])) # left, right lane
-                
-                temp_exit_point.append(((curr_x + 4, curr_y - 3), self.layout[curr_x + 4][curr_y - 3])) # right, left lane
-                temp_exit_point.append(((curr_x + 4, curr_y - 4), self.layout[curr_x + 4][curr_y - 4])) # right, right lane
-                
-                temp_exit_point.append(((curr_x, curr_y - 4), self.layout[curr_x][curr_y - 4])) # straight,
-            
-        elif(previous_direction == '>'):
-            if(len(self.get_successors(curr_x, curr_y)) == 4):
-                temp_exit_point.append(((curr_x + 1, curr_y + 2), self.layout[curr_x + 1][curr_y + 2])) # left, left lane
-                temp_exit_point.append(((curr_x + 2, curr_y + 2), self.layout[curr_x + 2][curr_y + 2])) # left, right lane
-                
-                temp_exit_point.append(((curr_x + 3, curr_y - 3), self.layout[curr_x + 3][curr_y - 3])) # right, left lane
-                temp_exit_point.append(((curr_x + 4, curr_y - 3), self.layout[curr_x + 4][curr_y - 3])) # right, right lane
-                
-                temp_exit_point.append(((curr_x + 5, curr_y), self.layout[curr_x + 5][curr_y])) # straight,
-            else:
-                temp_exit_point.append(((curr_x + 1, curr_y + 1), self.layout[curr_x + 1][curr_y + 1])) # left, left lane
-                temp_exit_point.append(((curr_x + 2, curr_y + 1), self.layout[curr_x + 2][curr_y + 1])) # left, right lane
-                
-                temp_exit_point.append(((curr_x + 3, curr_y - 4), self.layout[curr_x + 3][curr_y - 4])) # right, left lane
-                temp_exit_point.append(((curr_x + 4, curr_y - 4), self.layout[curr_x + 4][curr_y - 4])) # right, right lane
-                
-                temp_exit_point.append(((curr_x + 5, curr_y), self.layout[curr_x + 5][curr_y])) # straight,
+            possible_exit_deltas = []
 
-        elif(previous_direction == 'v'):
-            if(len(self.get_successors(curr_x, curr_y)) == 4):
-                temp_exit_point.append(((curr_x + 2, curr_y + 1), self.layout[curr_x + 2][curr_y + 1])) # left, left lane
-                temp_exit_point.append(((curr_x + 2, curr_y + 2), self.layout[curr_x + 2][curr_y + 2])) # left, right lane
-                
-                temp_exit_point.append(((curr_x - 3, curr_y + 3), self.layout[curr_x - 3][curr_y + 3])) # right, left lane
-                temp_exit_point.append(((curr_x - 3, curr_y + 4), self.layout[curr_x - 3][curr_y + 4])) # right, right lane
-                
-                temp_exit_point.append((curr_x, curr_y + 4), self.layout[curr_x][curr_y + 4]) # straight,
-            else:
-                temp_exit_point.append(((curr_x + 1, curr_y + 1), self.layout[curr_x + 2][curr_y + 1])) # left, left lane
-                temp_exit_point.append(((curr_x + 1, curr_y + 2), self.layout[curr_x + 2][curr_y + 2])) # left, right lane
-                
-                temp_exit_point.append(((curr_x - 4, curr_y + 3), self.layout[curr_x - 3][curr_y + 3])) # right, left lane
-                temp_exit_point.append(((curr_x - 4, curr_y + 4), self.layout[curr_x - 3][curr_y + 4])) # right, right lane
-                
-                temp_exit_point.append(((curr_x, curr_y + 4), self.layout[curr_x][curr_y + 4])) # straight,
-            
-        elif(previous_direction == '<'):
-            if(len(self.get_successors(curr_x, curr_y)) == 4):
-                temp_exit_point.append(((curr_x - 1, curr_y + 2), self.layout[curr_x - 1][curr_y + 2])) # left, left lane
-                temp_exit_point.append(((curr_x - 2, curr_y + 2), self.layout[curr_x - 2][curr_y + 2])) # left, right lane
-                
-                temp_exit_point.append(((curr_x - 1, curr_y - 3), self.layout[curr_x - 1][curr_y - 3])) # right, left lane
-                temp_exit_point.append(((curr_x - 2, curr_y - 3), self.layout[curr_x - 2][curr_y - 3])) # right, right lane
-                
-                temp_exit_point.append(((curr_x - 4, curr_y), self.layout[curr_x - 4][curr_y])) # straight,
-            else:
-                temp_exit_point.append(((curr_x - 1, curr_y + 1), self.layout[curr_x - 1][curr_y + 1])) # left, left lane
-                temp_exit_point.append(((curr_x - 2, curr_y + 1), self.layout[curr_x - 2][curr_y + 1])) # left, right lane
-                
-                temp_exit_point.append(((curr_x - 3, curr_y - 3), self.layout[curr_x - 3][curr_y - 3])) # right, left lane
-                temp_exit_point.append(((curr_x - 4, curr_y - 3), self.layout[curr_x - 4][curr_y - 3])) # right, right lane
-                
-                temp_exit_point.append(((curr_x - 4, curr_y), self.layout[curr_x - 4][curr_y])) # straight,
-            
-        else:
-            print("unknown direction!")
+        rotated_possible_exit_deltas = self.rotate_possible_exit_deltas(possible_exit_deltas, previous_direction, intersection_type)
+        for possible_exit_delta in rotated_possible_exit_deltas:
+            delta_x = possible_exit_delta[0]
+            delta_y = possible_exit_delta[1]
+            x = current_x + delta_x
+            y = current_y + delta_y
+            if x >= 0 and y >= 0 and x < GRID_WIDTH and y < GRID_HEIGHT:
+                if (self.is_road(x, y)):
+                    exit_points.append(((x, y), self.layout[x][y]))
 
-        exit_point = []
-        for ep in temp_exit_point:
-            state = ep[0]
-            if(self.is_road(state[0], state[1])):
-                exit_point.append(ep)
-
-        return exit_point
-        
-    def avenue_x_street(self, current_pos, previous_direction):
-        exit_point = []
-        curr_x = current_pos[0]
-        curr_y = current_pos[1]
-
-        car_on_first_lane = False
-        if len(self.get_successors(current_pos[0], current_pos[1])) == 3:
-            car_on_first_lane = True
-        elif len(self.get_successors(current_pos[0], current_pos[1])) == 4:
-            car_on_first_lane = False
-        else:
-            print("Error! Car is neither on the first nor second lane.")
-            return exit_point
-
-        if(previous_direction == '^'):
-            # left exit point
-            if (car_on_first_lane):
-                point1 = (curr_x - 1, curr_y - 1)
-                left_from_lane1 = (point1, self.layout[point1[0]][point1[1]])
-                if self.is_road(point1[0], point1[1]):
-                    exit_point.append(left_from_lane1)
-            else:
-                point2 = (curr_x -2, curr_y - 2)
-                left_from_lane2 = (point2, self.layout[point2[0]][point2[1]])
-                if self.is_road(point2[0], point2[1]):
-                    exit_point.append(left_from_lane2)
-
-            # right exit point
-            if (car_on_first_lane):
-                point1 = (curr_x + 4, curr_y - 2)
-                right_from_lane1 = (point1, self.layout[point1[0]][point1[1]])
-                if self.is_road(point1[0], point1[1]):
-                    exit_point.append(right_from_lane1)
-            else:
-                point2 = (curr_x + 3, curr_y - 2)
-                right_from_lane2 = (point2, self.layout[point2[0]][point2[1]])
-                if self.is_road(point2[0], point2[1]):
-                    exit_point.append(right_from_lane2)
-            
-            # straight exit point
-            point = (curr_x + 0, curr_y - 3)
-            straight = (point, self.layout[point[0]][point[1]])
-            if self.is_road(point[0], point[1]):
-                exit_point.append(straight)
-            
-        elif(previous_direction == '>'):
-            # left exit point
-            if (car_on_first_lane):
-                point1=(curr_x + 1, curr_y - 1)
-                left_from_lane1=(point1, self.layout[point1[0]][point1[1]])
-                if self.is_road(point1[0], point1[1]):
-                    exit_point.append(left_from_lane1)
-            else:
-                point2=(curr_x + 1, curr_y - 2)
-                left_from_lane2=(point2, self.layout[point2[0]][point2[1]])
-                if self.is_road(point2[0], point2[1]):
-                    exit_point.append(left_from_lane2)
-
-            # right exit point
-            if (car_on_first_lane):
-                point1 = (curr_x + 2, curr_y - 4)
-                right_from_lane1 = (point1, self.layout[point1[0]][point1[1]])
-                if self.is_road(point1[0], point1[1]):
-                    exit_point.append(right_from_lane1)
-            else:
-                point2 = (curr_x + 2, curr_y - 3)
-                right_from_lane2 = (point2, self.layout[point2[0]][point2[1]])
-                if self.is_road(point2[0], point2[1]):
-                    exit_point.append(right_from_lane2)
-
-            # straight exit point
-            point = (curr_x + 3, curr_y + 0)
-            straight = (point, self.layout[point[0][point[1]]])
-            if self.is_road(point2[0], point2[1]):
-                exit_point.append(straight)
-
-        elif(previous_direction == 'v'):
-            # left exit point
-            if (car_on_first_lane):
-                point1 = (curr_x + 1, curr_y + 1)
-                left_from_lane1 = (point1, self.layout[point1[0]][point1[1]])
-                if self.is_road(point1[0], point1[1]):
-                    exit_point.append(left_from_lane1)
-            else:
-                point2 = (curr_x + 2, curr_y + 1)
-                left_from_lane2 = (point2, self.layout[point2[0]][point2[1]])
-                if self.is_road(point2[0], point2[1]):
-                    exit_point.append(left_from_lane2)
-
-            # right exit point
-            if (car_on_first_lane):
-                point1 = (curr_x - 4, curr_y + 2)
-                right_from_lane1 = (point1, self.layout[point1[0]][point1[1]])
-                if self.is_road(point1[0], point1[1]):
-                    exit_point.append(right_from_lane1)
-            else:
-                point2 = (curr_x - 3, curr_y + 2)
-                right_from_lane2 = (point2, self.layout[point2[0]][point2[1]])
-                if self.is_road(point2[0], point2[1]):
-                    exit_point.append(right_from_lane2)
-
-            # straight exit point
-            point = (curr_x + 0, curr_y + 3)
-            straight = (point, self.layout[point[0][point[1]]])
-            if self.is_road(point2[0], point2[1]):
-                exit_point.append(straight)
-
-        elif(previous_direction == '<'):
-            # left exit point
-            if (car_on_first_lane):
-                point1 = (curr_x - 1, curr_y + 1)
-                left_from_lane1 = (point1, self.layout[point1[0]][point1[1]])
-                if self.is_road(point1[0], point1[1]):
-                    exit_point.append(left_from_lane1)
-            else:
-                point2 = (curr_x - 1, curr_y + 2)
-                left_from_lane2 = (point2, self.layout[point2[0]][point2[1]])
-                if self.is_road(point2[0], point2[1]):
-                    exit_point.append(left_from_lane2)
-
-            # right exit point
-            if (car_on_first_lane):
-                point1 = (curr_x - 2, curr_y + 4)
-                right_from_lane1 = (point1, self.layout[point1[0]][point1[1]])
-                if self.is_road(point1[0], point1[1]):
-                    exit_point.append(right_from_lane1)
-            else:
-                point2 = (curr_x - 2, curr_y + 3)
-                right_from_lane2 = (point2, self.layout[point2[0]][point2[1]])
-                if self.is_road(point2[0], point2[1]):
-                    exit_point.append(right_from_lane2)
-
-            # straight exit point
-            point = (curr_x - 3, curr_y + 0)
-            straight = (point, self.layout[point[0][point[1]]])
-            if self.is_road(point2[0], point2[1]):
-                exit_point.append(straight)
-
-        else:
-            print("unknown direction!")
-        
-        
-        if (len(exit_point) == 0):
-            print("Invalid intersection! Zero exit points.")
-        
-        return exit_point
-
-    def street_x_street(self, current_pos, previous_direction):
-        exit_point = []
-        curr_x = current_pos[0]
-        curr_y = current_pos[1]
-
-        if(previous_direction == '^'):
-            # left exit point
-            point = (curr_x - 1, curr_y - 1)
-            left = (point, self.layout[point[0][point[1]]])
-            if (self.is_road(point[0], point[1])):
-                exit_point.append(left)
-            
-            # right exit point
-            point = (curr_x + 2, curr_y - 2)
-            right = (point, self.layout[point[0][point[1]]])
-            if (self.is_road(point[0], point[1])):
-                exit_point.append(right)
-
-            # straight exit point
-            point = (curr_x + 0, curr_y - 3)
-            straight = (point, self.layout[point[0][point[1]]])
-            if (self.is_road(point[0], point[1])):
-                exit_point.append(straight)
-
-        elif(previous_direction == '>'):
-            # left exit point
-            point = (curr_x + 1, curr_y - 1)
-            left = (point, self.layout[point[0][point[1]]])
-            if (self.is_road(point[0], point[1])):
-                exit_point.append(left)
-
-            # right exit point
-            point = (curr_x + 2, curr_y + 2)
-            right = (point, self.layout[point[0][point[1]]])
-            if (self.is_road(point[0], point[1])):
-                exit_point.append(right)
-
-            # straight exit point
-            point = (curr_x + 3, curr_y + 0)
-            straight = (point, self.layout[point[0][point[1]]])
-            if (self.is_road(point[0], point[1])):
-                exit_point.append(straight)
-
-        elif(previous_direction == 'v'):
-            # left exit point
-            point = (curr_x + 1, curr_y + 1)
-            left = (point, self.layout[point[0][point[1]]])
-            if (self.is_road(point[0], point[1])):
-                exit_point.append(left)
-
-            # right exit point
-            point = (curr_x - 2, curr_y + 2)
-            right = (point, self.layout[point[0][point[1]]])
-            if (self.is_road(point[0], point[1])):
-                exit_point.append(right)
-
-            # straight exit point
-            point = (curr_x + 0, curr_y + 3)
-            straight = (point, self.layout[point[0][point[1]]])
-            if (self.is_road(point[0], point[1])):
-                exit_point.append(straight)
-
-        elif(previous_direction == '<'):
-            # left exit point
-            point = (curr_x - 1, curr_y - 1)
-            left = (point, self.layout[point[0][point[1]]])
-            if (self.is_road(point[0], point[1])):
-                exit_point.append(left)
-
-            # right exit point
-            point = (curr_x - 2, curr_y + 2)
-            right = (point, self.layout[point[0][point[1]]])
-            if (self.is_road(point[0], point[1])):
-                exit_point.append(right)
-
-            # straight exit point
-            point = (curr_x - 3, curr_y + 0)
-            straight = (point, self.layout[point[0][point[1]]])
-            if (self.is_road(point[0], point[1])):
-                exit_point.append(straight)
-
-        else:
-            print("unknown direction!")
-
-        if (len(exit_point) == 0):
-            print("Invalid intersection! Zero exit points.")
-
-        return exit_point
-
-    def street_x_avenue(self, current_pos, previous_direction):
-        temp_exit_point = []
-        curr_x = current_pos[0]
-        curr_y = current_pos[1]
-        if(previous_direction == '^'):
-            temp_exit_point.append(((curr_x - 1, curr_y - 1), self.layout[curr_x - 1][curr_y - 1])) # left, left lane
-            temp_exit_point.append(((curr_x - 1, curr_y - 2), self.layout[curr_x - 1][curr_y - 2])) # left, right lane
-                
-            temp_exit_point.append(((curr_x + 1, curr_y - 3), self.layout[curr_x + 1][curr_y - 3])) # right, left lane
-            temp_exit_point.append(((curr_x + 1, curr_y - 4), self.layout[curr_x + 1][curr_y - 4])) # right, right lane
-                
-            temp_exit_point.append(((curr_x, curr_y - 4), self.layout[curr_x][curr_y - 4])) # straight,
-            
-        elif(previous_direction == '>'):
-            temp_exit_point.append(((curr_x + 3, curr_y - 1), self.layout[curr_x - 3][curr_y - 1])) # left, left lane
-            temp_exit_point.append(((curr_x + 4, curr_y - 1), self.layout[curr_x - 4][curr_y - 1])) # left, right lane
-                
-            temp_exit_point.append(((curr_x + 3, curr_y + 1), self.layout[curr_x + 3][curr_y + 1])) # right, left lane
-            temp_exit_point.append(((curr_x + 4, curr_y + 1), self.layout[curr_x + 4][curr_y + 1])) # right, right lane
-                
-            temp_exit_point.append((curr_x + 4, curr_y), self.layout[curr_x + 4][curr_y]) # straight,
-            
-        elif(previous_direction == 'v'):
-            temp_exit_point.append(((curr_x + 1, curr_y + 1), self.layout[curr_x + 1][curr_y + 1])) # left, left lane
-            temp_exit_point.append(((curr_x + 1, curr_y + 2), self.layout[curr_x + 1][curr_y + 2])) # left, right lane
-                
-            temp_exit_point.append(((curr_x - 1, curr_y + 3), self.layout[curr_x - 1][curr_y + 3])) # right, left lane
-            temp_exit_point.append(((curr_x - 1, curr_y + 4), self.layout[curr_x - 1][curr_y + 4])) # right, right lane
-                
-            temp_exit_point.append(((curr_x, curr_y + 4), self.layout[curr_x][curr_y + 4])) # straight,
-            
-        elif(previous_direction == '<'):
-            temp_exit_point.append(((curr_x - 1, curr_y + 1), self.layout[curr_x - 1][curr_y + 1])) # left, left lane
-            temp_exit_point.append(((curr_x - 2, curr_y + 1), self.layout[curr_x - 2][curr_y + 1])) # left, right lane
-                
-            temp_exit_point.append(((curr_x - 1, curr_y - 1), self.layout[curr_x - 1][curr_y - 1])) # right, left lane
-            temp_exit_point.append(((curr_x - 2, curr_y - 1), self.layout[curr_x - 2][curr_y - 1])) # right, right lane
-                
-            temp_exit_point.append(((curr_x - 4, curr_y), self.layout[curr_x - 4][curr_y])) # straight,
-            
-        else:
-            print("unknown direction!")
-
-        exit_point = []
-        for ep in temp_exit_point:
-            state = ep[0]
-            if(self.is_road(state[0], state[1])):
-                exit_point.append(ep)
-
-        return exit_point
-    
-    def all_x_lane(self, current_pos, previous_direction):
-        temp_exit_point = []
-        curr_x = current_pos[0]
-        curr_y = current_pos[1]
-        temp_exit_point.append(((curr_x + 1, curr_y), ">"))
-        temp_exit_point.append(((curr_x - 1, curr_y), "<"))
-        temp_exit_point.append(((curr_x, curr_y + 1), "^"))
-        temp_exit_point.append(((curr_x, curr_y - 1), "v"))
-
-        exit_point = []
-        for ep in temp_exit_point:
-            state = ep[0]
-            if(self.is_road(state[0], state[1])):
-                exit_point.append(ep)
-
-        return exit_point
-        
+        return exit_points

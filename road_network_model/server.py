@@ -2,7 +2,7 @@ from mesa.visualization.ModularVisualization import ModularServer
 from mesa.visualization.modules import CanvasGrid, ChartModule
 from mesa.visualization.UserParam import UserSettableParameter
 
-from road_network_model.agent import Car
+from road_network_model.agent import Car, TrafficLight
 from road_network_model.model import RoadNetworkModel
 from road_network_model.portrayal import road_network_model_portrayal
 from road_network_model.constant import PROJECT_TITLE, CANVAS_WIDTH, CANVAS_HEIGHT, GRID_WIDTH, GRID_HEIGHT, NUMBER_OF_CARS
