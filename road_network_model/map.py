@@ -81,6 +81,9 @@ class MapGenerator:
     def get_traffic_light_position(self):
         return self.traffic_light
 
+    def get_traffic_light_position(self):
+        return self.traffic_light
+
     def get_layout(self):
         return self.layout
 
