@@ -16,7 +16,7 @@ class RoadNetworkModel(Model):
         "A model for simulating Road Network Model"
     )
 
-    def __init__(self, number_of_cars, width, height):
+    def __init__(self, number_of_cars, width, height, is_even_policy_enabled, is_odd_policy_enabled):
         # Tick increment
         self.tick = 0
 
@@ -29,6 +29,9 @@ class RoadNetworkModel(Model):
         # Set up Temporal dimension
         self.schedule = SimultaneousActivation(self)
         self.running = True
+
+        self.is_even_policy_enabled = is_even_policy_enabled
+        self.is_odd_policy_enabled = is_odd_policy_enabled
 
         ## generate road
         self.map = MapGenerator()
