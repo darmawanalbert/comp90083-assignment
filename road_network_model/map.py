@@ -123,7 +123,7 @@ class MapGenerator:
         else:
             return False
     
-    def is_allowed(self, plate_number_oddity=0, xy=(0, 0)):
+    def is_plate_number_oddity_allowed(self, plate_number_oddity=0, xy=(0, 0)):
         x, y = xy
 
         if(self.is_avenue(x, y)):
