@@ -1,5 +1,15 @@
-from road_network_model.constant import GRID_HEIGHT, LAYOUT_FILENAME, GRID_WIDTH, INTERSECTION
 import math
+
+GRID_WIDTH = 100
+GRID_HEIGHT = 100
+LAYOUT_FILENAME = "layouts/map2_100x100.layout"
+INTERSECTION = {
+    "AVE_AVE": 'T',
+    "AVE_ST": 't',
+    "ST_AVE": '+',
+    "ST_ST": '#',
+    "ALL_LA": '*'
+}
 
 # Legends
 # Directions
