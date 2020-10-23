@@ -81,6 +81,9 @@ class MapGenerator:
     def get_traffic_light_position(self):
         return self.traffic_light
 
+    def get_traffic_light_position(self):
+        return self.traffic_light
+
     def get_layout(self):
         return self.layout
 
@@ -98,6 +101,16 @@ class MapGenerator:
 
         return result_next_state
 
+    ''''def get_nearby(self, x, y, radius = 3):
+        state_nearby = []
+        for i in range(radius):
+            state_nearby.append(((x + i, y), self.layout[x + i],[y]))
+            state_nearby.append(((x - i, y), self.layout[x - i],[y]))
+            state_nearby.append(((x, y + 1), self.layout[x],[y + i]))
+            state_nearby.append(((x, y - 1), self.layout[x],[y - i]))
+
+        return state_nearby''''
+
     def is_road(self, x, y):
         coordinate = (x, y)
         if coordinate in self.road:
@@ -105,11 +118,45 @@ class MapGenerator:
         else:
             return False
 
+    def is_avenue(self, x, y):
+        
+        fringes = self.get_fringes(x, y)
+        _direction = self.layout[x][y]
+        count = 0
+        for fringe in fringes:
+            fringe_direction = self.layout[fringe[0]][fringe[1]]
+            if(fringe_direction == _direction):
+                count += 1
+
+        if(count > 1):
+            return True
+        else:
+            return False
+    
+    def is_plate_number_oddity_allowed(self, is_even_policy_enabled, is_odd_policy_enabled,  plate_number_oddity=0, xy=(0, 0)):
+        x, y = xy
+
+        if(self.is_avenue(x, y)):
+            if(is_even_policy_enabled == True):
+                if(plate_number_oddity % 2 == 0):
+                    return True
+                else: 
+                    return False
+                    
+            if(is_odd_policy_enabled == True):
+                if(plate_number_oddity % 2 == 1):
+                    return True
+                else: 
+                    return False
+        else:
+            return True
+
     def rotate_possible_exit_deltas(self, possible_exit_deltas, previous_direction, intersection_type):
         # No rotation is needed for single lane
-        if intersection_type == INTERSECTION["ALL_LA"]:
-            return possible_exit_deltas
+        #if intersection_type == INTERSECTION["ALL_LA"]:
+        #    return possible_exit_deltas
         # Positive degree is counter-clockwise
+
         degree = 0
         if (previous_direction == '<'):
             degree = math.pi / 2
@@ -132,7 +179,7 @@ class MapGenerator:
         current_x = current_pos[0]
         current_y = current_pos[1]
         number_of_fringes = len(self.get_fringes(current_x, current_y))
-
+        print("current_pos: ", current_pos)
         if(intersection_type == INTERSECTION["AVE_AVE"]):
             if number_of_fringes == 4: # Inner Lane
                 # 4 possibilities for each previous_direction:
@@ -167,7 +214,8 @@ class MapGenerator:
             # 5. Go straight
             possible_exit_deltas = [(-1, 1), (-1, 2), (2, 4), (2, 3), (0, 5)]
         elif(intersection_type == INTERSECTION["ALL_LA"]):
-            possible_exit_deltas = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+            # 3 possibilities for each previous_direction: turn left, turn right, or go straight
+            possible_exit_deltas = [(-1, 1), (2, 1), (0, 2)]
         else:
             possible_exit_deltas = []
 
@@ -177,8 +225,9 @@ class MapGenerator:
             delta_y = possible_exit_delta[1]
             x = current_x + delta_x
             y = current_y + delta_y
+            #print("x, y: ", (x, y), " direction: ", self.layout[x][y])
             if x >= 0 and y >= 0 and x < GRID_WIDTH and y < GRID_HEIGHT:
                 if (self.is_road(x, y)):
                     exit_points.append(((x, y), self.layout[x][y]))
-
+        #print("exit_points: ", exit_points)
         return exit_points

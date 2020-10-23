@@ -14,7 +14,9 @@ canvas_element = CanvasGrid(road_network_model_portrayal, GRID_WIDTH, GRID_HEIGH
 road_network_model_params = {
     "number_of_cars": NUMBER_OF_CARS,
     "width": GRID_WIDTH,
-    "height": GRID_HEIGHT
+    "height": GRID_HEIGHT,
+    "is_even_policy_enabled": UserSettableParameter("checkbox", "Even Plate Number Allowed", True),
+    "is_odd_policy_enabled": UserSettableParameter("checkbox", "Odd Plate Number Allowed", True),
 }
 
 # Instantiate the server at port 8521
