@@ -14,6 +14,8 @@ class Car(Agent):
                 destination_coor,
                 car_direction,
                 car_state,
+                departure_time,
+                return_time,
                 model):
         super().__init__(unique_id,model)
         self.plate_number_oddity = plate_number_oddity # ODD or EVEN, 0 is even and 1 is odd
@@ -22,10 +24,15 @@ class Car(Agent):
         self.destination_coor = destination_coor
         self.exit_direction = car_direction
         self.current_direction = car_direction
-        self.current_state = car_state
+        self.current_state = car_state # initialised to be 'IDLE'
         self.next_coor = (0,0)
+        self.departure_time = departure_time
+        self.return_time = return_time
         self.next_state = None
         self.shortest_exit_point = None
+        self.travel_time = 0
+
+        print(self.destination_coor)
 
         print(self.destination_coor)
 
@@ -44,96 +51,134 @@ class Car(Agent):
         map_instance = self.model.map
         layout = map_instance.get_layout()
 
-        # Get neighbours
-        neighbors = self.neighbors()
-        new_direction = layout[self.current_coor[0]][self.current_coor[1]]
-
-        new_x = self.current_coor[0]
-        new_y = self.current_coor[1]
-        # Determine Car direction
-        # Inside a Office / Residence / Entertainment
-        if new_direction in BUILDING:
-            new_direction = self.exit_direction
-            new_x = self.current_coor[0] + DIRECTION[new_direction][0]
-            new_y = self.current_coor[1] + DIRECTION[new_direction][1]
-            self.current_direction = new_direction
-        # Encounter an intersection
-        elif new_direction in INTERSECTION_SIGN:
-            current_pos = (self.current_coor[0], self.current_coor[1])
-            intersection_type = layout[self.current_coor[0]][self.current_coor[1]]
-            exit_points = map_instance.get_exit_point(current_pos, self.current_direction, intersection_type)
-
-            shortest_distance = float("inf")
-            shortest_exit_point = ()
-            for exit_point in exit_points:
-                newDist =  get_euclidean_distance(exit_point[0], self.current_coor)
-                if newDist < shortest_distance:
-                    shortest_distance = newDist
-                    shortest_exit_point = exit_point[0]
-
-            #print("exit_points: ", exit_points, ", shortest_exit_point: ", shortest_exit_point)
-            self.shortest_exit_point = shortest_exit_point
-
-            #print("self.current_direction:", self.current_direction, ", self.current_coor:", self.current_coor)
-            #print("layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]]:",layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]])
-            #print("self.shortest_exit_point: ", self.shortest_exit_point)
-
-            local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
-
-            new_x = self.current_coor[0] + DIRECTION[local_current_direction][0]
-            new_y = self.current_coor[1] + DIRECTION[local_current_direction][1]
-            if new_x < 0 or new_x == GRID_WIDTH:
-                new_x = self.current_coor[0]
-            if new_y < 0 or new_y == GRID_HEIGHT:
-                new_y = self.current_coor[1]
-
-            self.next_coor = (new_x, new_y)
-            #print("local_current_direction: ", local_current_direction)
-
-        # Inside a Road
-        elif new_direction == "x":
-            local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
-
-            new_x = self.current_coor[0] + DIRECTION[local_current_direction][0]
-            new_y = self.current_coor[1] + DIRECTION[local_current_direction][1]
-            if new_x < 0 or new_x == GRID_WIDTH:
-                new_x = self.current_coor[0]
-            if new_y < 0 or new_y == GRID_HEIGHT:
-                new_y = self.current_coor[1]
-
-            self.next_coor = (new_x, new_y)
-            #print("local_current_direction: ", local_current_direction)
-
+        # if it's time for car to depart
+        if self.model.tick >= self.departure_time:
+            self.current_state = "MOVE"
         else:
-            self.current_direction = new_direction
-            new_x = self.current_coor[0] + DIRECTION[self.current_direction][0]
-            new_y = self.current_coor[1] + DIRECTION[self.current_direction][1]
-            if new_x < 0 or new_x == GRID_WIDTH:
-                new_x = self.current_coor[0]
-            if new_y < 0 or new_y == GRID_HEIGHT:
-                new_y = self.current_coor[1]
+            self.current_state = "IDLE"
 
-        car_in_front = False
-        front_neighbor = None
-        for neighbor in neighbors:
-            if isinstance(neighbor, Car):
-                # Check whether the neighbour car is in front
-                if neighbor.current_coor == (new_x, new_y):
-                    car_in_front = True
-                    front_neighbor = neighbor
-        if car_in_front:
-            if front_neighbor.current_state == "IDLE":
-                new_state = "IDLE"
-                self.current_state = new_state
+        # if self.current_state is finished, check if it's time to return
+        if self.current_state == "FINISHED":
+            if self.model.tick > self.return_time:
+                self.current_state == "MOVE"
+            else:
+                pass
+
+        # performs "MOVE" procedure
+        if self.current_state == "MOVE":
+            # Get neighbours
+            neighbors = self.neighbors()
+
+            # Get new_direction
+            new_direction = layout[self.current_coor[0]][self.current_coor[1]]
+
+            # Get current coor, to be updated
+            new_x = self.current_coor[0]
+            new_y = self.current_coor[1]
+            # Determine Car direction
+            # Inside a Office / Residence / Entertainment
+            if new_direction in BUILDING:
+                new_direction = self.exit_direction
+                new_x = self.current_coor[0] + DIRECTION[new_direction][0]
+                new_y = self.current_coor[1] + DIRECTION[new_direction][1]
+                self.current_direction = new_direction
+            # Encounter an intersection
+            elif new_direction in INTERSECTION_SIGN:
+                current_pos = (self.current_coor[0], self.current_coor[1])
+                intersection_type = layout[self.current_coor[0]][self.current_coor[1]]
+                exit_points = map_instance.get_exit_point(current_pos, self.current_direction, intersection_type)
+
+                shortest_distance = float("inf")
+                shortest_exit_point = ()
+                for exit_point in exit_points:
+                    newDist =  get_euclidean_distance(exit_point[0], self.current_coor)
+                    if newDist < shortest_distance:
+                        shortest_distance = newDist
+                        shortest_exit_point = exit_point[0]
+
+                #print("exit_points: ", exit_points, ", shortest_exit_point: ", shortest_exit_point)
+                self.shortest_exit_point = shortest_exit_point
+
+                #print("self.current_direction:", self.current_direction, ", self.current_coor:", self.current_coor)
+                #print("layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]]:",layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]])
+                #print("self.shortest_exit_point: ", self.shortest_exit_point)
+
+                local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
+
+                new_x = self.current_coor[0] + DIRECTION[local_current_direction][0]
+                new_y = self.current_coor[1] + DIRECTION[local_current_direction][1]
+                if new_x < 0 or new_x == GRID_WIDTH:
+                    new_x = self.current_coor[0]
+                if new_y < 0 or new_y == GRID_HEIGHT:
+                    new_y = self.current_coor[1]
+
+                self.next_coor = (new_x, new_y)
+                #print("local_current_direction: ", local_current_direction)
+
+            # Inside a Road
+            elif new_direction == "x":
+                local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
+
+                new_x = self.current_coor[0] + DIRECTION[local_current_direction][0]
+                new_y = self.current_coor[1] + DIRECTION[local_current_direction][1]
+                if new_x < 0 or new_x == GRID_WIDTH:
+                    new_x = self.current_coor[0]
+                if new_y < 0 or new_y == GRID_HEIGHT:
+                    new_y = self.current_coor[1]
+
+                self.next_coor = (new_x, new_y)
+                #print("local_current_direction: ", local_current_direction)
+
+            else:
+                self.current_direction = new_direction
+                new_x = self.current_coor[0] + DIRECTION[self.current_direction][0]
+                new_y = self.current_coor[1] + DIRECTION[self.current_direction][1]
+                if new_x < 0 or new_x == GRID_WIDTH:
+                    new_x = self.current_coor[0]
+                if new_y < 0 or new_y == GRID_HEIGHT:
+                    new_y = self.current_coor[1]
+
+            car_in_front = False
+            front_neighbor = None
+            for neighbor in neighbors:
+                if isinstance(neighbor, Car):
+                    # Check whether the neighbour car is in front
+                    if neighbor.current_coor == (new_x, new_y):
+                        car_in_front = True
+                        front_neighbor = neighbor
+            if car_in_front:
+                if front_neighbor.current_state == "IDLE":
+                    self.current_state = "IDLE"
+                else:
+                    self.next_coor = (new_x, new_y)
+                    self.current_state = "MOVE"
             else:
                 self.next_coor = (new_x, new_y)
-        else:
-            self.next_coor = (new_x, new_y)
+                self.current_state = "MOVE"
+            
+            # if travelling, add mean travel time
+            if self.current_state == "MOVE":
+                self.travel_time += 1
+            else:
+                self.travel_time += 0
+            
+            #print(self.travel_time)
+
+            # if next_coor is destination, state is finished
+            if self.current_state != "IDLE":
+                if self.next_coor == self.destination_coor:
+                    self.current_state = "FINISHED"
+                    # Now, destination is to return home
+                    self.destination_coor = self.source_coor
+                else:
+                    pass
+        
+        else: # stay put when current_state is "IDLE" or "FINISHED"
+            self.next_coor = self.current_coor
 
     def advance(self):
         """ advance """
         self.current_coor = self.next_coor
-        #self.current_state = self.next_state
         self.model.grid.move_agent(self, self.next_coor)
 
 class Road(Agent):

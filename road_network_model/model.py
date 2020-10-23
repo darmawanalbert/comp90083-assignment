@@ -81,7 +81,6 @@ class RoadNetworkModel(Model):
         while shopper <= number_of_shopper:
             entertainment_list.append(entertainment[self.random.randint(0, len(entertainment) - 1)])
             shopper += 1
-
         """# Create a set of initial car positions
         initial_car_position = set() # set? so no two cars can start from the same position?
         while len(initial_car_position) != number_of_cars:
@@ -147,17 +146,21 @@ class RoadNetworkModel(Model):
                         car_direction = current_direction
 
             car_state = "IDLE"
+            departure_time = self.random.randint(0,5)
+            return_time = 1000
 
             car = Car(i, plate_number_oddity,
                         (source_x,source_y),
                         (destination_x,destination_y),
                         car_direction,
-                        car_state, self)
-
+                        car_state,
+                        departure_time,
+                        return_time,
+                        self)
+            
             self.grid.place_agent(car, (source_x,source_y))
             self.schedule.add(car)
 
     def step(self):
         self.schedule.step()
         self.tick += 1
-
