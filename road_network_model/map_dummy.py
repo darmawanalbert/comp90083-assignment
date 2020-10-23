@@ -163,10 +163,9 @@ class MapGenerator:
 
     def rotate_possible_exit_deltas(self, possible_exit_deltas, previous_direction, intersection_type):
         # No rotation is needed for single lane
-        #if intersection_type == INTERSECTION["ALL_LA"]:
-        #    return possible_exit_deltas
+        if intersection_type == INTERSECTION["ALL_LA"]:
+            return possible_exit_deltas
         # Positive degree is counter-clockwise
-
         degree = 0
         if (previous_direction == '<'):
             degree = math.pi / 2
@@ -189,7 +188,7 @@ class MapGenerator:
         current_x = current_pos[0]
         current_y = current_pos[1]
         number_of_fringes = len(self.get_fringes(current_x, current_y))
-        print("current_pos: ", current_pos)
+
         if(intersection_type == INTERSECTION["AVE_AVE"]):
             if number_of_fringes == 4: # Inner Lane
                 # 4 possibilities for each previous_direction:
@@ -224,8 +223,7 @@ class MapGenerator:
             # 5. Go straight
             possible_exit_deltas = [(-1, 1), (-1, 2), (2, 4), (2, 3), (0, 5)]
         elif(intersection_type == INTERSECTION["ALL_LA"]):
-            # 3 possibilities for each previous_direction: turn left, turn right, or go straight
-            possible_exit_deltas = [(-1, 1), (2, 1), (0, 2)]
+            possible_exit_deltas = [(1, 0), (-1, 0), (0, 1), (0, -1)]
         else:
             possible_exit_deltas = []
 
@@ -235,9 +233,8 @@ class MapGenerator:
             delta_y = possible_exit_delta[1]
             x = current_x + delta_x
             y = current_y + delta_y
-            #print("x, y: ", (x, y), " direction: ", self.layout[x][y])
             if x >= 0 and y >= 0 and x < GRID_WIDTH and y < GRID_HEIGHT:
                 if (self.is_road(x, y)):
                     exit_points.append(((x, y), self.layout[x][y]))
-        #print("exit_points: ", exit_points)
+
         return exit_points
