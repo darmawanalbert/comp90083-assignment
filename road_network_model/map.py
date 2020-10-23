@@ -5,7 +5,7 @@ import math
 # Directions
 # ^ : North
 # v : South
-# <x : West
+# < : West
 # > : East
 
 # Nodes
