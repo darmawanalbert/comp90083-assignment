@@ -101,6 +101,16 @@ class MapGenerator:
 
         return result_next_state
 
+    ''''def get_nearby(self, x, y, radius = 3):
+        state_nearby = []
+        for i in range(radius):
+            state_nearby.append(((x + i, y), self.layout[x + i],[y]))
+            state_nearby.append(((x - i, y), self.layout[x - i],[y]))
+            state_nearby.append(((x, y + 1), self.layout[x],[y + i]))
+            state_nearby.append(((x, y - 1), self.layout[x],[y - i]))
+
+        return state_nearby''''
+
     def is_road(self, x, y):
         coordinate = (x, y)
         if coordinate in self.road:
