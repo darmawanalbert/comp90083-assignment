@@ -105,34 +105,37 @@ class RoadNetworkModel(Model):
             # Randomising car sources
             random_position = initial_car_position.pop()
 
-            # source_x = 48
-            # source_y = 10
+            source_x = 58
+            source_y = 92
             # UNCOMMENT LATER
-            source_x = random_position[0]
+            # source_x = random_position[0]
             #print(source_x)
-            source_y = random_position[1]
+            # source_y = random_position[1]
             #print(source_y)
 
+            destination_x = 58
+            destination_y = 85
+
             # Randomising car destinations
-            randomise_destination = self.random.randint(0, 1)
-            if randomise_destination == 0: # office worker, given proportion hasn't been met
-                if len(office_list) > 0:
-                    random_position = office_list.pop()
-                    destination_x = random_position[0]
-                    destination_y = random_position[0]
-                else:
-                    random_position = entertainment_list.pop()
-                    destination_x = random_position[0]
-                    destination_y = random_position[0]
-            else:
-                if len(entertainment_list) > 0:
-                    random_position = entertainment_list.pop()
-                    destination_x = random_position[0]
-                    destination_y = random_position[0]
-                else:
-                    random_position = office_list.pop()
-                    destination_x = random_position[0]
-                    destination_y = random_position[0]
+            # randomise_destination = self.random.randint(0, 1)
+            # if randomise_destination == 0: # office worker, given proportion hasn't been met
+            #     if len(office_list) > 0:
+            #         random_position = office_list.pop()
+            #         destination_x = random_position[0]
+            #         destination_y = random_position[0]
+            #     else:
+            #         random_position = entertainment_list.pop()
+            #         destination_x = random_position[0]
+            #         destination_y = random_position[0]
+            # else:
+            #     if len(entertainment_list) > 0:
+            #         random_position = entertainment_list.pop()
+            #         destination_x = random_position[0]
+            #         destination_y = random_position[0]
+            #     else:
+            #         random_position = office_list.pop()
+            #         destination_x = random_position[0]
+            #         destination_y = random_position[0]
 
             stateFringes = self.map.get_fringes(source_x, source_y)
             shortest_distance = float("inf")
@@ -150,7 +153,7 @@ class RoadNetworkModel(Model):
 
             car_state = "IDLE"
             departure_time = self.random.randint(0,5)
-            return_time = 1000
+            return_time = float("inf")
 
             car = Car(i, plate_number_oddity,
                         (source_x,source_y),

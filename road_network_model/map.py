@@ -118,8 +118,35 @@ class MapGenerator:
         else:
             return False
 
+    def is_all_road(self, orientation, current_coordinate, destination_coordinate):
+        flag = True
+
+        # Horizontal orientation, y values are the same
+        if orientation == 0:
+            diff = abs(current_coordinate[0] - destination_coordinate[0])
+            if (current_coordinate[0] < destination_coordinate[0]):
+                for i in range(diff):
+                    if(self.is_road(current_coordinate[0] + i, current_coordinate[1]) == False):
+                        flag = False
+            else:
+                for i in range(diff):
+                    if(self.is_road(destination_coordinate[0] + i, destination_coordinate[1]) == False):
+                        flag = False
+        # Vertical orientation, x values are the same
+        else:
+            diff = abs(current_coordinate[1] - destination_coordinate[1])
+            if (current_coordinate[1] < destination_coordinate[1]):
+                for i in range(diff):
+                    if(self.is_road(current_coordinate[0], current_coordinate[1] + i) == False):
+                        flag = False
+            else:
+                for i in range(diff):
+                    if(self.is_road(destination_coordinate[0], destination_coordinate[1] + i) == False):
+                        flag = False
+        return flag
+
     def is_avenue(self, x, y):
-        
+
         fringes = self.get_fringes(x, y)
         _direction = self.layout[x][y]
         count = 0
@@ -151,12 +178,8 @@ class MapGenerator:
         else:
             return True
 
-    def rotate_possible_exit_deltas(self, possible_exit_deltas, previous_direction, intersection_type):
-        # No rotation is needed for single lane
-        #if intersection_type == INTERSECTION["ALL_LA"]:
-        #    return possible_exit_deltas
+    def rotate_possible_exit_deltas(self, possible_exit_deltas, previous_direction):
         # Positive degree is counter-clockwise
-
         degree = 0
         if (previous_direction == '<'):
             degree = math.pi / 2
@@ -179,7 +202,6 @@ class MapGenerator:
         current_x = current_pos[0]
         current_y = current_pos[1]
         number_of_fringes = len(self.get_fringes(current_x, current_y))
-        print("current_pos: ", current_pos)
         if(intersection_type == INTERSECTION["AVE_AVE"]):
             if number_of_fringes == 4: # Inner Lane
                 # 4 possibilities for each previous_direction:
@@ -219,7 +241,7 @@ class MapGenerator:
         else:
             possible_exit_deltas = []
 
-        rotated_possible_exit_deltas = self.rotate_possible_exit_deltas(possible_exit_deltas, previous_direction, intersection_type)
+        rotated_possible_exit_deltas = self.rotate_possible_exit_deltas(possible_exit_deltas, previous_direction)
         for possible_exit_delta in rotated_possible_exit_deltas:
             delta_x = possible_exit_delta[0]
             delta_y = possible_exit_delta[1]
