@@ -151,12 +151,9 @@ class MapGenerator:
         else:
             return True
 
-    def rotate_possible_exit_deltas(self, possible_exit_deltas, previous_direction, intersection_type):
-        # No rotation is needed for single lane
-        #if intersection_type == INTERSECTION["ALL_LA"]:
-        #    return possible_exit_deltas
+    def rotate_possible_exit_deltas(self, possible_exit_deltas, previous_direction):
         # Positive degree is counter-clockwise
-
+        print("Previous Direction in function: ", previous_direction)
         degree = 0
         if (previous_direction == '<'):
             degree = math.pi / 2
@@ -219,7 +216,8 @@ class MapGenerator:
         else:
             possible_exit_deltas = []
 
-        rotated_possible_exit_deltas = self.rotate_possible_exit_deltas(possible_exit_deltas, previous_direction, intersection_type)
+        rotated_possible_exit_deltas = self.rotate_possible_exit_deltas(possible_exit_deltas, previous_direction)
+        print("Rotated possible exit deltas: ", rotated_possible_exit_deltas)
         for possible_exit_delta in rotated_possible_exit_deltas:
             delta_x = possible_exit_delta[0]
             delta_y = possible_exit_delta[1]
