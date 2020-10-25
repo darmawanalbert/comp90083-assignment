@@ -45,6 +45,8 @@ class Car(Agent):
     # SimultaneousActivation required two methods: step and advance
     def step(self):
         """ step """
+        print("current state: ", self.current_state)
+
         # Map Information
         map_instance = self.model.map
         layout = map_instance.get_layout()
@@ -60,7 +62,7 @@ class Car(Agent):
             if self.model.tick > self.return_time:
                 self.current_state == "MOVE"
             else:
-                pass
+                self.current_state == "FINISHED"
 
         # performs "MOVE" procedure
         if self.current_state == "MOVE":
@@ -74,57 +76,65 @@ class Car(Agent):
             new_x = self.current_coor[0]
             new_y = self.current_coor[1]
 
+            print("self.current_coor: ", self.current_coor)
+            print("new_direction: ", new_direction)
+
             updated_direction = ""
             # Determine Car direction
             # Inside a Office / Residence / Entertainment
-            if (self.current_coor[0] == self.destination_coor[0] and abs(self.current_coor[1] - self.destination_coor[1]) <= 4):
+            if (self.current_coor[0] == self.destination_coor[0] 
+                and (abs(self.current_coor[1] - self.destination_coor[1]) <= 4)
+                and map_instance.is_all_road(1, self.current_coor, self.destination_coor)):
+                print("IF 1")
                 diff = self.current_coor[1] - self.destination_coor[1]
+                print("Current y: ", self.current_coor[1])
+                print("Destination y: ", self.destination_coor[1])
+                print("DIFF: ", abs(diff))
                 flag = True
 
                 for i in range(abs(diff)):
                     if (diff < 0):
                         enter_direction = "^"
-                        current_y = current_coor[1] + i
+                        current_y = self.current_coor[1] + i
                     else:
                         enter_direction = "v"
-                        current_y = destination_coor[1] + i
-
-                    if not map_instance.is_road(current_coor[0], current_y):
-                        flag = False
-                        break
+                        current_y = self.destination_coor[1] + i
 
                 if flag:
                     updated_direction = enter_direction
 
-            elif (self.current_coor[1] == self.destination_coor[1] and abs(self.current_coor[0] - self.destination_coor[0]) <= 4):
+            elif (self.current_coor[1] == self.destination_coor[1] 
+                and (abs(self.current_coor[0] - self.destination_coor[0]) <= 4)
+                and map_instance.is_all_road(0, self.current_coor, self.destination_coor)
+                ):
+                print("IF 2")
                 diff = self.current_coor[0] - self.destination_coor[0]
                 flag = True
 
                 for i in range(abs(diff)):
                     if (diff < 0):
                         enter_direction = ">"
-                        current_x = current_coor[0] + i
+                        current_x = self.current_coor[0] + i
                     else:
                         enter_direction = "<"
-                        current_x = destination_coor[0] + i
-
-                    if not map_instance.is_road(current_x, current_coor[1]):
-                        flag = False
-                        break
+                        current_x = self.destination_coor[0] + i
 
                 if flag:
                     updated_direction = enter_direction
 
             # Car is in building
             elif new_direction in BUILDING:
+                print("IF 3")
                 updated_direction = self.exit_direction
                 self.current_direction = updated_direction
 
             # Encounter an intersection
             elif new_direction in INTERSECTION_SIGN:
+                print("IF 4")
                 current_pos = (self.current_coor[0], self.current_coor[1])
                 intersection_type = layout[self.current_coor[0]][self.current_coor[1]]
                 exit_points = map_instance.get_exit_point(current_pos, self.current_direction, intersection_type)
+                print("exit_points: ", exit_points)
 
                 shortest_distance = float("inf")
                 shortest_exit_point = ()
@@ -139,12 +149,16 @@ class Car(Agent):
                 local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
                 updated_direction = local_current_direction
 
+                print("local_current_direction: ", local_current_direction)
+
             # Inside an Intersection
             elif new_direction == "x":
+                print("IF 5")
                 local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
                 updated_direction = local_current_direction
 
             else: # On a road, only one way to go
+                print("IF 6")
                 self.current_direction = new_direction
                 updated_direction = new_direction
 
