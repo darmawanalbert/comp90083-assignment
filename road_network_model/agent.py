@@ -31,6 +31,8 @@ class Car(Agent):
         self.next_state = None
         self.shortest_exit_point = None
         self.travel_time = 0
+        self.front_coor = None
+        self.arrive_at_destination = 0
 
         print("Destination Coordinates: ", self.destination_coor)
 
@@ -55,15 +57,29 @@ class Car(Agent):
         # if it's time for car to depart
         if self.current_state == "IDLE":
             # IDLE -> MOVE
+            if self.front_coor != None: # checks traffic jam
+                # Get neighbours
+                neighbors = self.neighbors()
+                car_in_front = False
 
-            if self.model.tick >= self.departure_time:
+                for neighbor in neighbors:
+                    if (isinstance(neighbor, Car) 
+                        and neighbor.current_coor == self.front_coor):
+                        # Check whether the neighbour car is in front
+                        car_in_front = True
+                
+                if not car_in_front:
+                    self.front_coor == None
+
+            if (self.model.tick >= self.departure_time
+                and self.front_coor == None):
                 self.current_state = "MOVE"
 
         # if self.current_state is finished, check if it's time to return
-        if self.current_state == "FINISHED":
+        if self.current_state == "FINISHED" and self.arrive_at_destination < 2:
             print("self.model.tick: ", self.model.tick, ", self.return_time: ", self.return_time)
             if self.model.tick > self.return_time:
-                self.current_state == "MOVE"
+                self.current_state = "MOVE"
 
         # performs "MOVE" procedure
         if self.current_state == "MOVE":
@@ -142,10 +158,11 @@ class Car(Agent):
                 shortest_distance = float("inf")
                 shortest_exit_point = ()
                 for exit_point in exit_points:
-                    newDist =  get_manhattan_distance(exit_point[0], self.destination_coor)
-                    if newDist < shortest_distance:
-                        shortest_distance = newDist
-                        shortest_exit_point = exit_point[0]
+                    if self.model.is_plate_number_oddity_allowed(self.plate_number_oddity, exit_point) == True:
+                        newDist =  get_manhattan_distance(exit_point[0], self.destination_coor)
+                        if newDist < shortest_distance:
+                            shortest_distance = newDist
+                            shortest_exit_point = exit_point[0]
 
                 self.shortest_exit_point = shortest_exit_point
 
@@ -183,17 +200,18 @@ class Car(Agent):
                     if neighbor.current_coor == (new_x, new_y):
                         car_in_front = True
                         front_neighbor = neighbor
+                        self.front_coor = (new_x, new_y)
 
-            # LOGIC NEXT STATE
+            # MOVE -> IDLE
             if car_in_front:
                 if front_neighbor.current_state == "IDLE":
                     self.current_state = "IDLE"
                 else:
                     self.next_coor = (new_x, new_y)
-                    self.current_state = "MOVE"
+                    #self.current_state = "MOVE"
             else:
                 self.next_coor = (new_x, new_y)
-                self.current_state = "MOVE"
+                #self.current_state = "MOVE"
 
             # if travelling, add mean travel time
             if self.current_state == "MOVE":
@@ -202,13 +220,17 @@ class Car(Agent):
                 self.travel_time += 0
 
             # if next_coor is destination, state is finished
+            # MOVE -> FINISHED
             if self.current_state != "IDLE":
                 if self.next_coor == self.destination_coor:
                     self.current_state = "FINISHED"
+                    self.arrive_at_destination += 1
                     # Now, destination is to return home
+                    self.return_time = self.model.tick + 3
                     self.destination_coor = self.source_coor
                 else:
                     pass
+    
         else: # stay put when current_state is "IDLE" or "FINISHED"
             self.next_coor = self.current_coor
 

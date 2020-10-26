@@ -159,24 +159,6 @@ class MapGenerator:
             return True
         else:
             return False
-    
-    def is_plate_number_oddity_allowed(self, is_even_policy_enabled, is_odd_policy_enabled,  plate_number_oddity=0, xy=(0, 0)):
-        x, y = xy
-
-        if(self.is_avenue(x, y)):
-            if(is_even_policy_enabled == True):
-                if(plate_number_oddity % 2 == 0):
-                    return True
-                else: 
-                    return False
-                    
-            if(is_odd_policy_enabled == True):
-                if(plate_number_oddity % 2 == 1):
-                    return True
-                else: 
-                    return False
-        else:
-            return True
 
     def rotate_possible_exit_deltas(self, possible_exit_deltas, previous_direction):
         # Positive degree is counter-clockwise

@@ -16,12 +16,19 @@ class RoadNetworkModel(Model):
         "A model for simulating Road Network Model"
     )
 
-    def __init__(self, number_of_cars, width, height, is_even_policy_enabled, is_odd_policy_enabled):
+    def __init__(self, number_of_cars, width, height, is_odd_even_policy_enabled):
         # Tick increment
         self.tick = 0
 
+        # Mean Travel Time
+        self.mean_travel_time = 1.23
+
+        # Odd-Even Policy Enabled
+        self.is_odd_even_policy_enabled = is_odd_even_policy_enabled
+
         # Set the day of the week
-        self.day = "THU"
+        self.day = 1
+        self.is_odd_date = True
 
         # Set up Spatial dimension
         self.grid = MultiGrid(width, height, True)
@@ -29,9 +36,6 @@ class RoadNetworkModel(Model):
         # Set up Temporal dimension
         self.schedule = SimultaneousActivation(self)
         self.running = True
-
-        self.is_even_policy_enabled = is_even_policy_enabled
-        self.is_odd_policy_enabled = is_odd_policy_enabled
 
         ## generate road
         self.map = MapGenerator()
@@ -163,10 +167,37 @@ class RoadNetworkModel(Model):
                         departure_time,
                         return_time,
                         self)
-            
+
             self.grid.place_agent(car, (source_x,source_y))
             self.schedule.add(car)
 
     def step(self):
         self.schedule.step()
         self.tick += 1
+
+        # After 4 days (5760 minutes), stop the simulation
+        if self.tick >= 5760:
+            self.running = False
+
+        # Check whether a day (1440 minutes) has passed
+        if self.tick % 1440 == 0:
+            self.day += 1
+            self.is_odd_date = not self.is_odd_date
+
+    def is_plate_number_oddity_allowed(self, plate_number_oddity=0, xy=(0, 0)):
+        x, y = xy
+
+        # implement odd even policy for avenue only.
+        if(self.map.is_avenue(x, y)):
+            if(self.is_odd_date == True):
+                if(plate_number_oddity % 2 == 0):
+                    return True
+                else:
+                    return False
+            else:
+                if(plate_number_oddity % 2 == 1):
+                    return True
+                else:
+                    return False
+        else:
+            return True

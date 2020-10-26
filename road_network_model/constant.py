@@ -30,12 +30,7 @@ DIRECTION = {
 }
 
 # proportion of office workers for each day
-DAY = {
-    "THU": 0.7,
-    "FRI": 0.8,
-    "SAT": 0.2,
-    "SUN": 0.1
-}
+DAY = [1.0, 0.7, 0.8, 0.2, 0.1, 1.0]
 
 # Car State
 CAR_STATE = {
