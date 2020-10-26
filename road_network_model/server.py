@@ -30,6 +30,10 @@ road_network_model_params = {
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
     "is_odd_even_policy_enabled": UserSettableParameter("checkbox", "Odd-Even Policy Enabled", True),
+    "policy_1_start_time": UserSettableParameter('slider', 'Policy 1 Start Time (in hours)', value=7, min_value=6, max_value=9, step=1),
+    "policy_1_duration": UserSettableParameter('slider', 'Policy 1 Duration (in hours)', value=1, min_value=1, max_value=3, step=1),
+    "policy_2_start_time": UserSettableParameter('slider', 'Policy 2 Start Time (in hours)', value=14, min_value=13, max_value=21, step=1),
+    "policy_2_duration": UserSettableParameter('slider', 'Policy 2 Duration (in hours)', value=1, min_value=1, max_value=3, step=1),
 }
 
 # Instantiate the server at port 8521

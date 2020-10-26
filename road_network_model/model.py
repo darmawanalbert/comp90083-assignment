@@ -10,13 +10,14 @@ from road_network_model.constant import DIRECTION, CAR_STATE, DAY, COLOR
 from road_network_model.util import get_euclidean_distance
 
 import math
+import random
 
 class RoadNetworkModel(Model):
     description = (
         "A model for simulating Road Network Model"
     )
 
-    def __init__(self, number_of_cars, width, height, is_odd_even_policy_enabled):
+    def __init__(self, number_of_cars, width, height, is_odd_even_policy_enabled, policy_1_start_time, policy_1_duration, policy_2_start_time, policy_2_duration):
         # Tick increment
         self.tick = 0
 
@@ -36,6 +37,11 @@ class RoadNetworkModel(Model):
         # Set up Temporal dimension
         self.schedule = SimultaneousActivation(self)
         self.running = True
+
+        self.policy_1_start_time = policy_1_start_time
+        self.policy_1_duration = policy_1_duration
+        self.policy_2_start_time = policy_2_start_time
+        self.policy_2_duration = policy_2_duration
 
         ## generate road
         self.map = MapGenerator()
@@ -69,86 +75,49 @@ class RoadNetworkModel(Model):
             self.grid.place_agent(trafficLight, trafficLightPosition[i])
 
         # Get source and destination lists
-        source_list = self.map.get_residence_position()
+        residence_list = self.map.get_residence_position()
         office = self.map.get_office_position()
         entertainment = self.map.get_entertainment_position()
 
         # Create destination list based on weekday/weekend proportion
         proportion_of_office_workers = DAY[self.day]
         number_of_office_workers = math.ceil(proportion_of_office_workers * number_of_cars)
-        number_of_shopper = 1 - number_of_office_workers
+        number_of_shopper = number_of_cars - number_of_office_workers
 
         office_list = []
-        entertainment_list = []
-        worker = 0
-        shopper = 0
-        while worker <= number_of_office_workers:
+        while len(office_list) <= number_of_office_workers:
             office_list.append(office[self.random.randint(0, len(office) -1)])
-            worker += 1
-        while shopper <= number_of_shopper:
-            entertainment_list.append(entertainment[self.random.randint(0, len(entertainment) - 1)])
-            shopper += 1
-        """# Create a set of initial car positions
-        initial_car_position = set() # set? so no two cars can start from the same position?
-        while len(initial_car_position) != number_of_cars:
-            random_road_index = self.random.randint(0, len(roadPosition) - 1)
-            initial_car_position.add(random_road_index)"""
 
-        initial_car_position = []  # list or set? if set, we might have more cars than sources
-        while len(initial_car_position) != number_of_cars:
-            random_road_index = self.random.randint(0, len(source_list) - 1)
-            initial_car_position.append(source_list[random_road_index])
-        #print(initial_car_position)
+        entertainment_list = []
+        while len(entertainment_list) <= number_of_shopper:
+            entertainment_list.append(entertainment[self.random.randint(0, len(entertainment) - 1)])
+
+        office_entertainment_list = office_list + entertainment_list
+        random.shuffle(residence_list)
+        print("Residence List: ", residence_list)
 
         layout = self.map.get_layout()
-        for i in range (number_of_cars):
+        for i in range(number_of_cars):
             plate_number_oddity = self.random.randint(0, 1)
-            """current_index = initial_car_position.pop()
-            source_x = roadPosition[current_index][0]
-            source_y = roadPosition[current_index][1]"""
-            # Randomising car sources
-            random_position = initial_car_position.pop()
+            source_x = residence_list[i][0]
+            source_y = residence_list[i][1]
+            destination_x = office_entertainment_list[i][0]
+            destination_y = office_entertainment_list[i][1]
 
-            source_x = 58
-            source_y = 92
-            # UNCOMMENT LATER
-            # source_x = random_position[0]
-            #print(source_x)
-            # source_y = random_position[1]
-            #print(source_y)
+            # TODO: Remove this later
+            # source_x = 58
+            # source_y = 92
+            # destination_x = 58
+            # destination_y = 85
 
-            destination_x = 58
-            destination_y = 85
-
-            # Randomising car destinations
-            # randomise_destination = self.random.randint(0, 1)
-            # if randomise_destination == 0: # office worker, given proportion hasn't been met
-            #     if len(office_list) > 0:
-            #         random_position = office_list.pop()
-            #         destination_x = random_position[0]
-            #         destination_y = random_position[0]
-            #     else:
-            #         random_position = entertainment_list.pop()
-            #         destination_x = random_position[0]
-            #         destination_y = random_position[0]
-            # else:
-            #     if len(entertainment_list) > 0:
-            #         random_position = entertainment_list.pop()
-            #         destination_x = random_position[0]
-            #         destination_y = random_position[0]
-            #     else:
-            #         random_position = office_list.pop()
-            #         destination_x = random_position[0]
-            #         destination_y = random_position[0]
-
-            stateFringes = self.map.get_fringes(source_x, source_y)
+            state_fringes = self.map.get_fringes(source_x, source_y)
             shortest_distance = float("inf")
-            car_direction = stateFringes[0][1]
-            for stateFringe in stateFringes:
-                current_direction =  stateFringe[1] # "^" "v" ">" "<"
+            car_direction = state_fringes[0][1]
+            for state_fringe in state_fringes:
+                current_direction =  state_fringe[1] # "^" "v" ">" "<"
                 if current_direction in DIRECTION:
-                    temp_x = stateFringe[0][0] + DIRECTION[current_direction][0]
-                    temp_y = stateFringe[0][1] + DIRECTION[current_direction][1]
+                    temp_x = state_fringe[0][0] + DIRECTION[current_direction][0]
+                    temp_y = state_fringe[0][1] + DIRECTION[current_direction][1]
 
                     newDist = get_euclidean_distance((temp_x, temp_y), (destination_x, destination_y))
                     if newDist < shortest_distance:
@@ -201,3 +170,21 @@ class RoadNetworkModel(Model):
                     return False
         else:
             return True
+
+    def is_odd_even_policy_time(self):
+        #1 day == 1440 minutes
+        day_tick = self.tick % 1440
+
+        print("day_tick:", day_tick)
+        print("self.policy_1_start_time : ", self.policy_1_start_time)
+        print("self.policy_1_duration: ", self.policy_1_duration)
+        print("self.policy_2_start_time : ", self.policy_2_start_time)
+        print('self.policy_2_duration:', self.policy_2_duration)
+        #period 1
+        if day_tick >= self.policy_1_start_time * 60 and day_tick <= (self.policy_1_start_time + self.policy_1_duration) * 60:
+            return True
+        #period 2
+        elif day_tick >= self.policy_2_start_time * 60 and day_tick <= (self.policy_2_start_time + self.policy_2_duration) * 60:
+            return True
+        else:
+            return False

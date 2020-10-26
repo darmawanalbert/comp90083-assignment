@@ -34,7 +34,7 @@ class Car(Agent):
         self.front_coor = None
         self.arrive_at_destination = 0
 
-        print("Destination Coordinates: ", self.destination_coor)
+        print("uniqueId: ", self.unique_id , ", Destination Coordinates: ", self.destination_coor)
 
     def neighbors(self):
         neighbors = self.model.grid.neighbor_iter(
@@ -67,7 +67,7 @@ class Car(Agent):
                         and neighbor.current_coor == self.front_coor):
                         # Check whether the neighbour car is in front
                         car_in_front = True
-                
+
                 if not car_in_front:
                     self.front_coor == None
 
@@ -103,11 +103,12 @@ class Car(Agent):
                 and (abs(self.current_coor[1] - self.destination_coor[1]) <= 4)
                 and (abs(self.current_coor[1] - self.destination_coor[1]) > 0)
                 and map_instance.is_all_road(1, self.current_coor, self.destination_coor)):
-                #print("IF 1")
+                print("unique_id: ", self.unique_id, ", IF 1")
+
                 diff = self.current_coor[1] - self.destination_coor[1]
                 #print("Current y: ", self.current_coor[1])
-                print("Destination y: ", self.destination_coor[1])
-                print("DIFF: ", abs(diff))
+                #print("Destination y: ", self.destination_coor[1])
+                #print("DIFF: ", abs(diff))
                 flag = True
 
                 for i in range(abs(diff)):
@@ -126,7 +127,7 @@ class Car(Agent):
                 and (abs(self.current_coor[0] - self.destination_coor[0]) > 0)
                 and map_instance.is_all_road(0, self.current_coor, self.destination_coor)
                 ):
-                print("IF 2")
+                print("unique_id: ", self.unique_id, ", IF 2")
                 diff = self.current_coor[0] - self.destination_coor[0]
                 flag = True
 
@@ -143,28 +144,39 @@ class Car(Agent):
 
             # Car is in building
             elif new_direction in BUILDING:
-                #print("IF 3")
+                print("unique_id: ", self.unique_id, ", IF 3")
                 updated_direction = self.exit_direction
                 self.current_direction = updated_direction
 
             # Encounter an intersection
             elif new_direction in INTERSECTION_SIGN:
-                #print("IF 4")
+                print("unique_id: ", self.unique_id, ", IF 4")
                 current_pos = (self.current_coor[0], self.current_coor[1])
                 intersection_type = layout[self.current_coor[0]][self.current_coor[1]]
                 exit_points = map_instance.get_exit_point(current_pos, self.current_direction, intersection_type)
-                print("exit_points: ", exit_points)
+                #print("exit_points: ", exit_points)
+
+                #print("self.model.is_odd_even_policy_time(): ", self.model.is_odd_even_policy_time())
 
                 shortest_distance = float("inf")
                 shortest_exit_point = ()
                 for exit_point in exit_points:
-                    if self.model.is_plate_number_oddity_allowed(self.plate_number_oddity, exit_point) == True:
-                        newDist =  get_manhattan_distance(exit_point[0], self.destination_coor)
+                    if self.model.is_odd_even_policy_time() == True: 
+                        if self.model.is_plate_number_oddity_allowed(self.plate_number_oddity, exit_point[0]) == True:
+                            newDist = get_manhattan_distance(exit_point[0], self.destination_coor)
+                            if newDist < shortest_distance:
+                                shortest_distance = newDist
+                                shortest_exit_point = exit_point[0]
+                    else:
+                        newDist = get_manhattan_distance(exit_point[0], self.destination_coor)
                         if newDist < shortest_distance:
                             shortest_distance = newDist
                             shortest_exit_point = exit_point[0]
 
+
                 self.shortest_exit_point = shortest_exit_point
+
+                #print("shortest_exit_point: ", shortest_exit_point)
 
                 local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
                 updated_direction = local_current_direction
@@ -173,12 +185,12 @@ class Car(Agent):
 
             # Inside an Intersection
             elif new_direction == "x":
-                #print("IF 5")
+                print("unique_id: ", self.unique_id, ", IF 5")
                 local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
                 updated_direction = local_current_direction
 
             else: # On a road, only one way to go
-                #print("IF 6")
+                print("unique_id: ", self.unique_id, ", IF 6")
                 self.current_direction = new_direction
                 updated_direction = new_direction
 
@@ -230,7 +242,7 @@ class Car(Agent):
                     self.destination_coor = self.source_coor
                 else:
                     pass
-    
+
         else: # stay put when current_state is "IDLE" or "FINISHED"
             self.next_coor = self.current_coor
 

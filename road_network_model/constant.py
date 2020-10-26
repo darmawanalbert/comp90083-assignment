@@ -10,7 +10,7 @@ GRID_WIDTH = 100
 GRID_HEIGHT = 100
 
 # Initialization Constant
-NUMBER_OF_CARS = 1
+NUMBER_OF_CARS = 30
 
 LAYOUT_FILENAME = "road_network_model/layouts/map2_100x100.layout"
 
@@ -30,7 +30,7 @@ DIRECTION = {
 }
 
 # proportion of office workers for each day
-DAY = [1.0, 0.7, 0.8, 0.2, 0.1, 1.0]
+DAY = [0.60, 0.65, 0.60, 0.40, 0.35, 0.60]
 
 # Car State
 CAR_STATE = {
