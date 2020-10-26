@@ -151,7 +151,7 @@ class MapGenerator:
         _direction = self.layout[x][y]
         count = 0
         for fringe in fringes:
-            fringe_direction = self.layout[fringe[0]][fringe[1]]
+            fringe_direction = self.layout[fringe[0][0]][fringe[0][1]]
             if(fringe_direction == _direction):
                 count += 1
 

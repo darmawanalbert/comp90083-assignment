@@ -26,6 +26,15 @@ def number_finished_cars(model):
     return sum([1 for j in range(100) for i in range(100) for cell in model.grid.iter_cell_list_contents((i,j))
             if type(cell) is Car and cell.current_state == "FINISHED"])
 
+# TODO: Remove later
+def number_office(model):
+    return sum([1 for j in range(100) for i in range(100) for cell in model.grid.iter_cell_list_contents((i,j))
+            if type(cell) is Car and cell.arrive_at_destination == 0])
+
+def number_residence(model):
+    return sum([1 for j in range(100) for i in range(100) for cell in model.grid.iter_cell_list_contents((i,j))
+            if type(cell) is Car and cell.arrive_at_destination == 1])
+
 def simulation_minutes(model):
     return model.tick
 
@@ -162,7 +171,9 @@ class RoadNetworkModel(Model):
             "Idle": number_idle_cars,
             "Move": number_move_cars,
             "Finished": number_finished_cars,
-            "SimulationMinutes": simulation_minutes
+            "SimulationMinutes": simulation_minutes,
+            "NumberOffice": number_office,
+            "NumberResidence": number_residence
         })
         self.datacollector.collect(self)
 
@@ -182,16 +193,17 @@ class RoadNetworkModel(Model):
 
     def is_plate_number_oddity_allowed(self, plate_number_oddity=0, xy=(0, 0)):
         x, y = xy
-
+        print("plate_number_oddity: ", plate_number_oddity)
+        print("xy: ", xy)
         # implement odd even policy for avenue only.
         if(self.map.is_avenue(x, y)):
-            if(self.is_odd_date == True):
-                if(plate_number_oddity % 2 == 0):
+            if(self.is_odd_date == True): # date is odd
+                if(plate_number_oddity % 2 == 1): # plate is odd
                     return True
                 else:
                     return False
-            else:
-                if(plate_number_oddity % 2 == 1):
+            else: # date is even
+                if(plate_number_oddity % 2 == 0): # plate is even
                     return True
                 else:
                     return False

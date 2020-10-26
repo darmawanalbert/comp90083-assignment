@@ -16,7 +16,9 @@ chart = ChartModule(
     [
         {"Label": "Idle", "Color": "#FF0000"},
         {"Label": "Move", "Color": "#00FF00"},
-        {"Label": "Finished", "Color": "#0000FF"}
+        {"Label": "Finished", "Color": "#0000FF"},
+        {"Label": "NumberOffice", "Color": "#F1C40F"},
+        {"Label": "NumberResidence", "Color": "#2C3E50"}
     ]
 )
 

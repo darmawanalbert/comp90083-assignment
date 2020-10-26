@@ -1,7 +1,7 @@
 from mesa import Agent
 from road_network_model.constant import DIRECTION, CAR_STATE, GRID_HEIGHT, GRID_WIDTH, INTERSECTION, BUILDING, INTERSECTION_SIGN
 import math
-from road_network_model.util import get_manhattan_distance, get_next_direction
+from road_network_model.util import get_euclidean_distance, get_next_direction
 
 class Car(Agent):
     X_COOR = 0
@@ -161,14 +161,16 @@ class Car(Agent):
                 shortest_distance = float("inf")
                 shortest_exit_point = ()
                 for exit_point in exit_points:
-                    if self.model.is_odd_even_policy_time() == True: 
+                    if self.model.is_odd_even_policy_enabled == True and self.model.is_odd_even_policy_time() == True:
                         if self.model.is_plate_number_oddity_allowed(self.plate_number_oddity, exit_point[0]) == True:
-                            newDist = get_manhattan_distance(exit_point[0], self.destination_coor)
+                            newDist = get_euclidean_distance(exit_point[0], self.destination_coor)
                             if newDist < shortest_distance:
                                 shortest_distance = newDist
                                 shortest_exit_point = exit_point[0]
+                        # else
+                        # is an avenue (i.e. not allowed to pass due to odd/even), do not append
                     else:
-                        newDist = get_manhattan_distance(exit_point[0], self.destination_coor)
+                        newDist = get_euclidean_distance(exit_point[0], self.destination_coor)
                         if newDist < shortest_distance:
                             shortest_distance = newDist
                             shortest_exit_point = exit_point[0]
@@ -176,12 +178,12 @@ class Car(Agent):
 
                 self.shortest_exit_point = shortest_exit_point
 
-                #print("shortest_exit_point: ", shortest_exit_point)
+                print("shortest_exit_point: ", shortest_exit_point)
 
                 local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
                 updated_direction = local_current_direction
 
-                #print("local_current_direction: ", local_current_direction)
+                print("local_current_direction: ", local_current_direction)
 
             # Inside an Intersection
             elif new_direction == "x":
@@ -240,6 +242,21 @@ class Car(Agent):
                     # Now, destination is to return home
                     self.return_time = self.model.tick + 3
                     self.destination_coor = self.source_coor
+
+                    state_fringes = map_instance.get_fringes(self.next_coor[0], self.next_coor[1])
+                    shortest_distance = float("inf")
+                    car_direction = state_fringes[0][1]
+                    for state_fringe in state_fringes:
+                        current_direction =  state_fringe[1] # "^" "v" ">" "<"
+                        if current_direction in DIRECTION:
+                            temp_x = state_fringe[0][0] + DIRECTION[current_direction][0]
+                            temp_y = state_fringe[0][1] + DIRECTION[current_direction][1]
+
+                            newDist = get_euclidean_distance((temp_x, temp_y), (self.destination_coor[0], self.destination_coor[1]))
+                            if newDist < shortest_distance:
+                                shortest_distance = newDist
+                                car_direction = current_direction
+                    self.exit_direction = car_direction
                 else:
                     pass
 
