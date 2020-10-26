@@ -12,6 +12,23 @@ from road_network_model.util import get_euclidean_distance
 import math
 import random
 
+
+# Data Collection method
+def number_idle_cars(model):
+    return sum([1 for j in range(100) for i in range(100) for cell in model.grid.iter_cell_list_contents((i,j))
+            if type(cell) is Car and cell.current_state == "IDLE"])
+
+def number_move_cars(model):
+    return sum([1 for j in range(100) for i in range(100) for cell in model.grid.iter_cell_list_contents((i,j))
+            if type(cell) is Car and cell.current_state == "MOVE"])
+
+def number_finished_cars(model):
+    return sum([1 for j in range(100) for i in range(100) for cell in model.grid.iter_cell_list_contents((i,j))
+            if type(cell) is Car and cell.current_state == "FINISHED"])
+
+def simulation_minutes(model):
+    return model.tick
+
 class RoadNetworkModel(Model):
     description = (
         "A model for simulating Road Network Model"
@@ -140,9 +157,19 @@ class RoadNetworkModel(Model):
             self.grid.place_agent(car, (source_x,source_y))
             self.schedule.add(car)
 
+        # Data Collection
+        self.datacollector = DataCollector({
+            "Idle": number_idle_cars,
+            "Move": number_move_cars,
+            "Finished": number_finished_cars,
+            "SimulationMinutes": simulation_minutes
+        })
+        self.datacollector.collect(self)
+
     def step(self):
         self.schedule.step()
         self.tick += 1
+        self.datacollector.collect(self)
 
         # After 4 days (5760 minutes), stop the simulation
         if self.tick >= 5760:

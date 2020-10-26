@@ -12,6 +12,14 @@ from road_network_model.constant import PROJECT_TITLE, CANVAS_WIDTH, CANVAS_HEIG
 # Define a CanvasGrid to visualise the Road Network Model
 canvas_element = CanvasGrid(road_network_model_portrayal, GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT)
 
+chart = ChartModule(
+    [
+        {"Label": "Idle", "Color": "#FF0000"},
+        {"Label": "Move", "Color": "#00FF00"},
+        {"Label": "Finished", "Color": "#0000FF"}
+    ]
+)
+
 class InfoTextElement(TextElement):
     def render(self, model):
         mean_travel_time = model.mean_travel_time
@@ -38,7 +46,7 @@ road_network_model_params = {
 
 # Instantiate the server at port 8521
 server = ModularServer(
-    RoadNetworkModel, [InfoTextElement(), canvas_element], PROJECT_TITLE, road_network_model_params
+    RoadNetworkModel, [canvas_element, InfoTextElement(), chart], PROJECT_TITLE, road_network_model_params
 )
 
 server.port = 8521
