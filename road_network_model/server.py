@@ -67,7 +67,7 @@ road_network_model_params = {
 
 # Instantiate the server at port 8521
 server = ModularServer(
-    RoadNetworkModel, [canvas_element, InfoTextElement(), chart], PROJECT_TITLE, road_network_model_params
+    RoadNetworkModel, [InfoTextElement(), canvas_element, chart], PROJECT_TITLE, road_network_model_params
 )
 
 server.port = 8521

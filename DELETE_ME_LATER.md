@@ -5,7 +5,6 @@
 4. Jupyter Notebook - Histogram Data Distribution
 5. Server.py - Legends for every agent color
 6. Server.py - Print number of odd and even cars
-7. Server.py - Print clock
 
 # Notes
 24 hour timeline
