@@ -3,8 +3,6 @@
 2. Destination allocation each day based on probability (Nuvi)
 3. Jupyter Notebook - BatchRunner (ongoing)
 4. Jupyter Notebook - Histogram Data Distribution
-5. Server.py - Legends for every agent color
-6. Server.py - Print number of odd and even cars
 
 # Notes
 24 hour timeline

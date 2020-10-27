@@ -46,7 +46,20 @@ class InfoTextElement(TextElement):
         minute_text = "0" + str(minute) if minute < 10 else str(minute)
         time_text = hour_text + ":" + minute_text
 
-        return "Mean Travel Time: {}<br>Day: {} ({}) <br>Time: {}".format(mean_travel_time_text, day_text, oddity_text, time_text)
+        return "<b>Info</b><br>Mean Travel Time: {}<br>Day: {} ({}) <br>Time: {}".format(mean_travel_time_text, day_text, oddity_text, time_text)
+
+class LegendsTextElement(TextElement):
+    def render(self, model):
+        legends_text = "<b>Legends</b><br>"
+        legends_text += "Grey: Road<br>"
+        legends_text += "Black: Intersection<br>"
+        legends_text += "Yellow: Residence<br>"
+        legends_text += "Green: Entertainment<br>"
+        legends_text += "Blue: Office<br>"
+        legends_text += "Pink: Car (odd plate)<br>"
+        legends_text += "Red: Car (even plate)<br><br>"
+        legends_text += "<b>Car State</b>"
+        return legends_text
 
 policy_range_time = [
     '7_10_and_16_19',
@@ -67,7 +80,7 @@ road_network_model_params = {
 
 # Instantiate the server at port 8521
 server = ModularServer(
-    RoadNetworkModel, [InfoTextElement(), canvas_element, chart], PROJECT_TITLE, road_network_model_params
+    RoadNetworkModel, [InfoTextElement(), canvas_element, LegendsTextElement(), chart], PROJECT_TITLE, road_network_model_params
 )
 
 server.port = 8521
