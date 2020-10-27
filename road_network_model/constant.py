@@ -12,7 +12,7 @@ GRID_HEIGHT = 100
 # Initialization Constant
 NUMBER_OF_CARS = 30
 
-LAYOUT_FILENAME = "road_network_model/layouts/map2_100x100.layout"
+LAYOUT_FILENAME = "road_network_model/layouts/map_100x100.layout"
 
 COLOR = {
     "dark_grey":"#333333",
