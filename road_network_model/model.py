@@ -5,7 +5,7 @@ from mesa.datacollection import DataCollector
 
 from road_network_model.agent import Car, Road, Office, Residence, Entertainment, TrafficLight
 from road_network_model.map import MapGenerator
-from road_network_model.constant import DIRECTION, CAR_STATE, DAY, COLOR
+from road_network_model.constant import DIRECTION, CAR_STATE, DAY, COLOR, PEAK_HOURS, ACTIVITY_PROPORTION
 
 from road_network_model.util import get_euclidean_distance
 
@@ -43,7 +43,7 @@ class RoadNetworkModel(Model):
         "A model for simulating Road Network Model"
     )
 
-    def __init__(self, number_of_cars, width, height, is_odd_even_policy_enabled, policy_1_start_time, policy_1_duration, policy_2_start_time, policy_2_duration):
+    def __init__(self, number_of_cars, width, height, is_odd_even_policy_enabled, policy_range_time):
         # Tick increment
         self.tick = 0
 
@@ -64,10 +64,18 @@ class RoadNetworkModel(Model):
         self.schedule = SimultaneousActivation(self)
         self.running = True
 
-        self.policy_1_start_time = policy_1_start_time
-        self.policy_1_duration = policy_1_duration
-        self.policy_2_start_time = policy_2_start_time
-        self.policy_2_duration = policy_2_duration
+        self.policy_range_time = policy_range_time
+
+        # Set up peak hours
+        self.start_peak_hour_1 = PEAK_HOURS["START_PEAK_HOUR_1"] #7
+        self.end_peak_hour_1 = PEAK_HOURS["END_PEAK_HOUR_1"] #10
+        self.start_peak_hour_2 = PEAK_HOURS["START_PEAK_HOUR_2"] #4
+        self.end_peak_hour_2 = PEAK_HOURS["END_PEAK_HOUR_2"] #7
+
+        # Car distribution
+        num_highly_active_cars = math.ceil(ACTIVITY_PROPORTION["HIGHLY_ACTIVE"] * number_of_cars)
+        num_business_hours_cars = math.ceil(ACTIVITY_PROPORTION["BUSINESS_HOURS"] * number_of_cars)
+        num_peak_hours_cars = number_of_cars - (num_highly_active_cars + num_business_hours_cars)
 
         ## generate road
         self.map = MapGenerator()
@@ -124,7 +132,22 @@ class RoadNetworkModel(Model):
 
         layout = self.map.get_layout()
         for i in range(number_of_cars):
-            plate_number_oddity = self.random.randint(0, 1)
+            # determine departure and return time based on activity level
+            if i <= num_highly_active_cars:
+                activity_level = "HIGHLY_ACTIVE"
+                departure_time = 0
+                return_time = float("inf")
+            elif i <= num_business_hours_cars:
+                activity_level = "BUSINESS_HOURS"
+                departure_time = self.start_peak_hour_1
+                return_time = float("inf")
+            else:
+                activity_level = "PEAK_HOURS"
+                departure_time = self.random.randint(self.start_peak_hour_1,self.end_peak_hour_1)
+                return_time = self.random.randint(self.start_peak_hour_2,self.end_peak_hour_2)
+
+            #plate_number_oddity = self.random.randint(0, 1)
+            plate_number_oddity = 0
             source_x = residence_list[i][0]
             source_y = residence_list[i][1]
             destination_x = office_entertainment_list[i][0]
@@ -149,10 +172,9 @@ class RoadNetworkModel(Model):
                     if newDist < shortest_distance:
                         shortest_distance = newDist
                         car_direction = current_direction
-
+            
+            # all cars are initialised as IDLE
             car_state = "IDLE"
-            departure_time = self.random.randint(0,5)
-            return_time = float("inf")
 
             car = Car(i, plate_number_oddity,
                         (source_x,source_y),
@@ -161,6 +183,7 @@ class RoadNetworkModel(Model):
                         car_state,
                         departure_time,
                         return_time,
+                        activity_level,
                         self)
 
             self.grid.place_agent(car, (source_x,source_y))
@@ -215,15 +238,42 @@ class RoadNetworkModel(Model):
         day_tick = self.tick % 1440
 
         print("day_tick:", day_tick)
-        print("self.policy_1_start_time : ", self.policy_1_start_time)
-        print("self.policy_1_duration: ", self.policy_1_duration)
-        print("self.policy_2_start_time : ", self.policy_2_start_time)
-        print('self.policy_2_duration:', self.policy_2_duration)
-        #period 1
-        if day_tick >= self.policy_1_start_time * 60 and day_tick <= (self.policy_1_start_time + self.policy_1_duration) * 60:
-            return True
-        #period 2
-        elif day_tick >= self.policy_2_start_time * 60 and day_tick <= (self.policy_2_start_time + self.policy_2_duration) * 60:
-            return True
+        print("self.policy_range_time : ", self.policy_range_time)
+        
+        if self.policy_range_time == '7_10_and_16_19':
+            if day_tick >= (7 * 60) and day_tick <= (10 * 60):
+                return True
+            elif day_tick >= (16 * 60) and day_tick <= (19 * 60):
+                return True
+            else:
+                return False
+        elif self.policy_range_time == '8_11_and_17_20':
+            if day_tick >= (8 * 60) and day_tick <= (11 * 60):
+                return True
+            elif day_tick >= (17 * 60) and day_tick <= (20 * 60):
+                return True
+            else:
+                return False
+        elif self.policy_range_time == '6_9_and_15_18':
+            if day_tick >= (6 * 60) and day_tick <= (9 * 60):
+                return True
+            elif day_tick >= (15 * 60) and day_tick <= (18 * 60):
+                return True
+            else:
+                return False
+        elif self.policy_range_time == '8_9_and_17_18':
+            if day_tick >= (8 * 60) and day_tick <= (9 * 60):
+                return True
+            elif day_tick >= 17 * 60 and day_tick <= 18 * 60:
+                return True
+            else:
+                return False
+        elif self.policy_range_time == '6_10_and_15_20':
+            if day_tick >= (6 * 60) and day_tick <= (10 * 60):
+                return True
+            elif day_tick >= (15 * 60) and day_tick <= (20 * 60):
+                return True
+            else:
+                return False
         else:
             return False

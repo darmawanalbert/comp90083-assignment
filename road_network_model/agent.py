@@ -16,6 +16,7 @@ class Car(Agent):
                 car_state,
                 departure_time,
                 return_time,
+                activity_level,
                 model):
         super().__init__(unique_id,model)
         self.plate_number_oddity = plate_number_oddity # ODD or EVEN, 0 is even and 1 is odd
@@ -33,6 +34,7 @@ class Car(Agent):
         self.travel_time = 0
         self.front_coor = None
         self.arrive_at_destination = 0
+        self.activity_level = activity_level
 
         print("uniqueId: ", self.unique_id , ", Destination Coordinates: ", self.destination_coor)
 
@@ -77,9 +79,12 @@ class Car(Agent):
 
         # if self.current_state is finished, check if it's time to return
         if self.current_state == "FINISHED" and self.arrive_at_destination < 2:
-            print("self.model.tick: ", self.model.tick, ", self.return_time: ", self.return_time)
-            if self.model.tick > self.return_time:
-                self.current_state = "MOVE"
+            if ((self.activity_level == "PEAK_HOURS" and self.arrive_at_destination < 2)
+            or self.activity_level == "HIGHLY_ACTIVE" 
+            or self.activity_level == "BUSINESS_HOURS"):
+                print("self.model.tick: ", self.model.tick, ", self.return_time: ", self.return_time)
+                if self.model.tick > self.return_time:
+                    self.current_state = "MOVE"
 
         # performs "MOVE" procedure
         if self.current_state == "MOVE":
@@ -240,8 +245,11 @@ class Car(Agent):
                     self.current_state = "FINISHED"
                     self.arrive_at_destination += 1
                     # Now, destination is to return home
-                    self.return_time = self.model.tick + 3
                     self.destination_coor = self.source_coor
+
+                    # Return soon if activity is HIGHLY_ACTIVE or BUSINESS_HOURS
+                    if self.activity_level == "HIGHLY_ACTIVE" or self.activity_level == "BUSINESS_HOURS":
+                        self.return_time = self.model.tick + 5
 
                     state_fringes = map_instance.get_fringes(self.next_coor[0], self.next_coor[1])
                     shortest_distance = float("inf")
