@@ -46,7 +46,7 @@ class InfoTextElement(TextElement):
         minute_text = "0" + str(minute) if minute < 10 else str(minute)
         time_text = hour_text + ":" + minute_text
 
-        return "<b>Info</b><br>Mean Travel Time: {}<br>Day: {} ({}) <br>Time: {}".format(mean_travel_time_text, day_text, oddity_text, time_text)
+        return "<b>Info</b><br>Mean Travel Time: {} minutes<br>Day: {} ({}) <br>Time: {}".format(mean_travel_time_text, day_text, oddity_text, time_text)
 
 class LegendsTextElement(TextElement):
     def render(self, model):
