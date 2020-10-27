@@ -40,8 +40,8 @@ class InfoTextElement(TextElement):
 
         # Time
         current_time = model.tick % 1440
-        hour = math.floor(model.tick / 60)
-        minute = model.tick % 60
+        hour = math.floor(current_time / 60)
+        minute = current_time % 60
         hour_text = "0" + str(hour) if hour < 10 else str(hour)
         minute_text = "0" + str(minute) if minute < 10 else str(minute)
         time_text = hour_text + ":" + minute_text
