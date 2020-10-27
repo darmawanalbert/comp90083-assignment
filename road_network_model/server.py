@@ -34,16 +34,21 @@ class InfoTextElement(TextElement):
             oddity_text = "Even day"
         return "Mean Travel Time: {}<br>Day: {}<br>Oddity: {}".format(mean_travel_time_text, day_text, oddity_text)
 
+policy_range_time = [
+    '7_10_and_16_19',
+    '8_11_and_17_20',
+    '6_9_and_15_18',
+    '8_9_and_17_18',
+    '6_10_and_15_20'
+]
+
 # Define parameter of Road Network Model
 road_network_model_params = {
     "number_of_cars": NUMBER_OF_CARS,
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
     "is_odd_even_policy_enabled": UserSettableParameter("checkbox", "Odd-Even Policy Enabled", True),
-    "policy_1_start_time": UserSettableParameter('slider', 'Policy 1 Start Time (in hours)', value=7, min_value=6, max_value=9, step=1),
-    "policy_1_duration": UserSettableParameter('slider', 'Policy 1 Duration (in hours)', value=1, min_value=1, max_value=3, step=1),
-    "policy_2_start_time": UserSettableParameter('slider', 'Policy 2 Start Time (in hours)', value=14, min_value=13, max_value=21, step=1),
-    "policy_2_duration": UserSettableParameter('slider', 'Policy 2 Duration (in hours)', value=1, min_value=1, max_value=3, step=1),
+    "policy_range_time": UserSettableParameter('choice', 'Range Time (in hours)', value='7_10_and_16_19', choices=policy_range_time)
 }
 
 # Instantiate the server at port 8521

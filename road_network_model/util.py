@@ -1,6 +1,5 @@
 import math
 
-
 def get_manhattan_distance(coor1, coor2):
     distance = abs(coor1[0]-coor2[0]) + abs(coor1[1] - coor2[1])
     return distance
