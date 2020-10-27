@@ -66,6 +66,8 @@ class RoadNetworkModel(Model):
 
         self.policy_range_time = policy_range_time
 
+        print("Policy Range Time: ", self.policy_range_time)
+
         # Set up peak hours
         self.start_peak_hour_1 = PEAK_HOURS["START_PEAK_HOUR_1"] #7
         self.end_peak_hour_1 = PEAK_HOURS["END_PEAK_HOUR_1"] #10
@@ -128,7 +130,7 @@ class RoadNetworkModel(Model):
 
         office_entertainment_list = office_list + entertainment_list
         random.shuffle(residence_list)
-        print("Residence List: ", residence_list)
+        # print("Residence List: ", residence_list)
 
         layout = self.map.get_layout()
         for i in range(number_of_cars):
@@ -146,8 +148,8 @@ class RoadNetworkModel(Model):
                 departure_time = self.random.randint(self.start_peak_hour_1,self.end_peak_hour_1)
                 return_time = self.random.randint(self.start_peak_hour_2,self.end_peak_hour_2)
 
-            #plate_number_oddity = self.random.randint(0, 1)
-            plate_number_oddity = 0
+            plate_number_oddity = self.random.randint(0, 1)
+            #plate_number_oddity = 0
             source_x = residence_list[i][0]
             source_y = residence_list[i][1]
             destination_x = office_entertainment_list[i][0]
@@ -204,7 +206,7 @@ class RoadNetworkModel(Model):
         self.schedule.step()
         self.tick += 1
         self.datacollector.collect(self)
-
+        print(self.tick)
         # After 4 days (5760 minutes), stop the simulation
         if self.tick >= 5760:
             self.running = False
@@ -216,8 +218,8 @@ class RoadNetworkModel(Model):
 
     def is_plate_number_oddity_allowed(self, plate_number_oddity=0, xy=(0, 0)):
         x, y = xy
-        print("plate_number_oddity: ", plate_number_oddity)
-        print("xy: ", xy)
+        # print("plate_number_oddity: ", plate_number_oddity)
+        # print("xy: ", xy)
         # implement odd even policy for avenue only.
         if(self.map.is_avenue(x, y)):
             if(self.is_odd_date == True): # date is odd
@@ -237,8 +239,8 @@ class RoadNetworkModel(Model):
         #1 day == 1440 minutes
         day_tick = self.tick % 1440
 
-        print("day_tick:", day_tick)
-        print("self.policy_range_time : ", self.policy_range_time)
+        # print("day_tick:", day_tick)
+        # print("self.policy_range_time : ", self.policy_range_time)
         
         if self.policy_range_time == '7_10_and_16_19':
             if day_tick >= (7 * 60) and day_tick <= (10 * 60):

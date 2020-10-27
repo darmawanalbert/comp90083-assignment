@@ -48,7 +48,7 @@ road_network_model_params = {
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
     "is_odd_even_policy_enabled": UserSettableParameter("checkbox", "Odd-Even Policy Enabled", True),
-    "policy_range_time": UserSettableParameter('choice', 'Range Time', value='7_10_and_16_19', choices=policy_range_time)
+    "policy_range_time": UserSettableParameter('choice', 'Range Time (in hours)', value='7_10_and_16_19', choices=policy_range_time)
 }
 
 # Instantiate the server at port 8521

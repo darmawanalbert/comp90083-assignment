@@ -36,7 +36,7 @@ class Car(Agent):
         self.arrive_at_destination = 0
         self.activity_level = activity_level
 
-        print("uniqueId: ", self.unique_id , ", Destination Coordinates: ", self.destination_coor)
+        # print("uniqueId: ", self.unique_id , ", Destination Coordinates: ", self.destination_coor)
 
     def neighbors(self):
         neighbors = self.model.grid.neighbor_iter(
@@ -50,7 +50,7 @@ class Car(Agent):
     def step(self):
         # STATE:
         # IDLE <-> MOVE <-> FINISHED
-        print("current state: ", self.current_state)
+        # print("current state: ", self.current_state)
 
         # Map Information
         map_instance = self.model.map
@@ -78,11 +78,11 @@ class Car(Agent):
                 self.current_state = "MOVE"
 
         # if self.current_state is finished, check if it's time to return
-        if self.current_state == "FINISHED" and self.arrive_at_destination < 2:
+        if self.current_state == "FINISHED":
             if ((self.activity_level == "PEAK_HOURS" and self.arrive_at_destination < 2)
             or self.activity_level == "HIGHLY_ACTIVE" 
             or self.activity_level == "BUSINESS_HOURS"):
-                print("self.model.tick: ", self.model.tick, ", self.return_time: ", self.return_time)
+                # print("self.model.tick: ", self.model.tick, ", self.return_time: ", self.return_time)
                 if self.model.tick > self.return_time:
                     self.current_state = "MOVE"
 
@@ -98,8 +98,8 @@ class Car(Agent):
             new_x = self.current_coor[0]
             new_y = self.current_coor[1]
 
-            #print("self.current_coor: ", self.current_coor)
-            #print("new_direction: ", new_direction)
+            # print("self.current_coor: ", self.current_coor)
+            # print("new_direction: ", new_direction)
 
             updated_direction = ""
             # Determine Car direction
@@ -108,7 +108,7 @@ class Car(Agent):
                 and (abs(self.current_coor[1] - self.destination_coor[1]) <= 4)
                 and (abs(self.current_coor[1] - self.destination_coor[1]) > 0)
                 and map_instance.is_all_road(1, self.current_coor, self.destination_coor)):
-                print("unique_id: ", self.unique_id, ", IF 1")
+                # print("unique_id: ", self.unique_id, ", IF 1")
 
                 diff = self.current_coor[1] - self.destination_coor[1]
                 #print("Current y: ", self.current_coor[1])
@@ -132,7 +132,7 @@ class Car(Agent):
                 and (abs(self.current_coor[0] - self.destination_coor[0]) > 0)
                 and map_instance.is_all_road(0, self.current_coor, self.destination_coor)
                 ):
-                print("unique_id: ", self.unique_id, ", IF 2")
+                # print("unique_id: ", self.unique_id, ", IF 2")
                 diff = self.current_coor[0] - self.destination_coor[0]
                 flag = True
 
@@ -149,13 +149,13 @@ class Car(Agent):
 
             # Car is in building
             elif new_direction in BUILDING:
-                print("unique_id: ", self.unique_id, ", IF 3")
+                # print("unique_id: ", self.unique_id, ", IF 3")
                 updated_direction = self.exit_direction
                 self.current_direction = updated_direction
 
             # Encounter an intersection
             elif new_direction in INTERSECTION_SIGN:
-                print("unique_id: ", self.unique_id, ", IF 4")
+                # print("unique_id: ", self.unique_id, ", IF 4")
                 current_pos = (self.current_coor[0], self.current_coor[1])
                 intersection_type = layout[self.current_coor[0]][self.current_coor[1]]
                 exit_points = map_instance.get_exit_point(current_pos, self.current_direction, intersection_type)
@@ -183,21 +183,21 @@ class Car(Agent):
 
                 self.shortest_exit_point = shortest_exit_point
 
-                print("shortest_exit_point: ", shortest_exit_point)
+                # print("shortest_exit_point: ", shortest_exit_point)
 
                 local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
                 updated_direction = local_current_direction
 
-                print("local_current_direction: ", local_current_direction)
+                # print("local_current_direction: ", local_current_direction)
 
             # Inside an Intersection
             elif new_direction == "x":
-                print("unique_id: ", self.unique_id, ", IF 5")
+                # print("unique_id: ", self.unique_id, ", IF 5")
                 local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
                 updated_direction = local_current_direction
 
             else: # On a road, only one way to go
-                print("unique_id: ", self.unique_id, ", IF 6")
+                # print("unique_id: ", self.unique_id, ", IF 6")
                 self.current_direction = new_direction
                 updated_direction = new_direction
 
