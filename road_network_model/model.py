@@ -11,6 +11,7 @@ from road_network_model.util import get_euclidean_distance
 
 import math
 import random
+import numpy as np
 
 
 # Data Collection method
@@ -38,6 +39,9 @@ def number_residence(model):
 def simulation_minutes(model):
     return model.tick
 
+def mean_travel_time(model):
+    return model.mean_travel_time
+
 class RoadNetworkModel(Model):
     description = (
         "A model for simulating Road Network Model"
@@ -48,7 +52,7 @@ class RoadNetworkModel(Model):
         self.tick = 0
 
         # Mean Travel Time
-        self.mean_travel_time = 1.23
+        self.mean_travel_time = 0.0
 
         # Odd-Even Policy Enabled
         self.is_odd_even_policy_enabled = is_odd_even_policy_enabled
@@ -198,13 +202,16 @@ class RoadNetworkModel(Model):
             "Finished": number_finished_cars,
             "SimulationMinutes": simulation_minutes,
             "NumberOffice": number_office,
-            "NumberResidence": number_residence
+            "NumberResidence": number_residence,
+            "MeanTravelTime": mean_travel_time
         })
         self.datacollector.collect(self)
 
     def step(self):
         self.schedule.step()
         self.tick += 1
+        self.mean_travel_time = np.mean([cell.travel_time for j in range(100) for i in range(100) for cell in self.grid.iter_cell_list_contents((i,j))
+            if type(cell) is Car])
         self.datacollector.collect(self)
         print(self.tick)
         # After 4 days (5760 minutes), stop the simulation
