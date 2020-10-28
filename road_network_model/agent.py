@@ -21,20 +21,24 @@ class Car(Agent):
         super().__init__(unique_id,model)
         self.plate_number_oddity = plate_number_oddity # ODD or EVEN, 0 is even and 1 is odd
         self.current_coor = source_coor
-        self.source_coor = source_coor
-        self.destination_coor = destination_coor
+        self.source_coor = source_coor # relative source coor, might be residence/office depends on the cycle
+        self.destination_coor = destination_coor # relative destination coor, as above
+        self.absolute_source_coor = source_coor # DO NOT CHANGE, this stores the residence of the car
         self.exit_direction = car_direction
         self.current_direction = car_direction
         self.current_state = car_state # initialised to be 'IDLE'
         self.next_coor = (0,0)
         self.departure_time = departure_time
         self.return_time = return_time
+        self.absolute_departure_time = departure_time
+        self.absolute_return_time = return_time
         self.next_state = None
         self.shortest_exit_point = None
         self.travel_time = 0
         self.front_coor = None
         self.arrive_at_destination = 0
         self.activity_level = activity_level
+        self.current_day = 1 # initialised as Thursday, to be checked at "FINISHED state"
 
         # print("uniqueId: ", self.unique_id , ", Destination Coordinates: ", self.destination_coor)
 
@@ -56,6 +60,16 @@ class Car(Agent):
         map_instance = self.model.map
         layout = map_instance.get_layout()
 
+        if self.model.day > self.current_day:
+            if self.current_state == 'FINISHED':
+                self.source_coor = self.absolute_source_coor
+                self.destination_coor = self.model.office_entertainment_list[self.unique_id]
+                self.arrive_at_destination = 0
+                self.departure_time = self.absolute_departure_time
+                self.return_time = self.absolute_departure_time
+                self.current_day += 1
+
+        # Updating States
         # if it's time for car to depart
         if self.current_state == "IDLE":
             # IDLE -> MOVE
@@ -81,9 +95,11 @@ class Car(Agent):
         if self.current_state == "FINISHED":
             if ((self.activity_level == "PEAK_HOURS" and self.arrive_at_destination < 2)
             or self.activity_level == "HIGHLY_ACTIVE" 
-            or self.activity_level == "BUSINESS_HOURS"):
+            or (self.activity_level == "BUSINESS_HOURS" 
+                and self.model.tick % 1440 < self.model.end_peak_hour_2
+                and self.current_coor != self.absolute_source_coor)):
                 # print("self.model.tick: ", self.model.tick, ", self.return_time: ", self.return_time)
-                if self.model.tick > self.return_time:
+                if (self.model.tick % 1440) > self.return_time:
                     self.current_state = "MOVE"
 
         # performs "MOVE" procedure
@@ -238,14 +254,15 @@ class Car(Agent):
             else:
                 self.travel_time += 0
 
-            # if next_coor is destination, state is finished
             # MOVE -> FINISHED
             if self.current_state != "IDLE":
-                if self.next_coor == self.destination_coor:
+                if self.next_coor == self.destination_coor:  # if next_coor is destination, state is finished
                     self.current_state = "FINISHED"
                     self.arrive_at_destination += 1
                     # Now, destination is to return home
+                    dest_temp = self.destination_coor
                     self.destination_coor = self.source_coor
+                    self.source_coor = dest_temp
 
                     # Return soon if activity is HIGHLY_ACTIVE or BUSINESS_HOURS
                     if self.activity_level == "HIGHLY_ACTIVE" or self.activity_level == "BUSINESS_HOURS":

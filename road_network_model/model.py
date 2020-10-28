@@ -11,6 +11,7 @@ from road_network_model.util import get_euclidean_distance
 
 import math
 import random
+import numpy as np
 
 
 # Data Collection method
@@ -38,6 +39,9 @@ def number_residence(model):
 def simulation_minutes(model):
     return model.tick
 
+def mean_travel_time(model):
+    return model.mean_travel_time
+
 class RoadNetworkModel(Model):
     description = (
         "A model for simulating Road Network Model"
@@ -48,7 +52,7 @@ class RoadNetworkModel(Model):
         self.tick = 0
 
         # Mean Travel Time
-        self.mean_travel_time = 1.23
+        self.mean_travel_time = 0.0
 
         # Odd-Even Policy Enabled
         self.is_odd_even_policy_enabled = is_odd_even_policy_enabled
@@ -73,6 +77,9 @@ class RoadNetworkModel(Model):
         self.end_peak_hour_1 = PEAK_HOURS["END_PEAK_HOUR_1"] #10
         self.start_peak_hour_2 = PEAK_HOURS["START_PEAK_HOUR_2"] #4
         self.end_peak_hour_2 = PEAK_HOURS["END_PEAK_HOUR_2"] #7
+
+        # Set number_of_cars
+        self.num_of_cars = number_of_cars
 
         # Car distribution
         num_highly_active_cars = math.ceil(ACTIVITY_PROPORTION["HIGHLY_ACTIVE"] * number_of_cars)
@@ -115,8 +122,9 @@ class RoadNetworkModel(Model):
         office = self.map.get_office_position()
         entertainment = self.map.get_entertainment_position()
 
+
         # Create destination list based on weekday/weekend proportion
-        proportion_of_office_workers = DAY[self.day]
+        """proportion_of_office_workers = DAY[self.day]
         number_of_office_workers = math.ceil(proportion_of_office_workers * number_of_cars)
         number_of_shopper = number_of_cars - number_of_office_workers
 
@@ -127,8 +135,11 @@ class RoadNetworkModel(Model):
         entertainment_list = []
         while len(entertainment_list) <= number_of_shopper:
             entertainment_list.append(entertainment[self.random.randint(0, len(entertainment) - 1)])
+        
+        office_entertainment_list = office_list + entertainment_list"""
 
-        office_entertainment_list = office_list + entertainment_list
+        number_of_office_workers, number_of_shopper = self.get_number_of_workers_and_shoppers(DAY[self.day], number_of_cars)
+        self.office_entertainment_list = self.get_random_office_entertainment_list(office, number_of_office_workers, entertainment, number_of_shopper)
         random.shuffle(residence_list)
         # print("Residence List: ", residence_list)
 
@@ -152,8 +163,8 @@ class RoadNetworkModel(Model):
             #plate_number_oddity = 0
             source_x = residence_list[i][0]
             source_y = residence_list[i][1]
-            destination_x = office_entertainment_list[i][0]
-            destination_y = office_entertainment_list[i][1]
+            destination_x = self.office_entertainment_list[i][0]
+            destination_y = self.office_entertainment_list[i][1]
 
             # TODO: Remove this later
             # source_x = 58
@@ -198,13 +209,16 @@ class RoadNetworkModel(Model):
             "Finished": number_finished_cars,
             "SimulationMinutes": simulation_minutes,
             "NumberOffice": number_office,
-            "NumberResidence": number_residence
+            "NumberResidence": number_residence,
+            "MeanTravelTime": mean_travel_time
         })
         self.datacollector.collect(self)
 
     def step(self):
         self.schedule.step()
         self.tick += 1
+        self.mean_travel_time = np.mean([cell.travel_time for j in range(100) for i in range(100) for cell in self.grid.iter_cell_list_contents((i,j))
+            if type(cell) is Car])
         self.datacollector.collect(self)
         print(self.tick)
         # After 4 days (5760 minutes), stop the simulation
@@ -215,6 +229,17 @@ class RoadNetworkModel(Model):
         if self.tick % 1440 == 0:
             self.day += 1
             self.is_odd_date = not self.is_odd_date
+
+            # Create new destination lists
+            office = self.map.get_office_position()
+            entertainment = self.map.get_entertainment_position()
+            number_of_office_workers, number_of_shopper = self.get_number_of_workers_and_shoppers(
+                DAY[self.day], self.num_of_cars)
+            self.office_entertainment_list = self.get_random_office_entertainment_list(
+                office, number_of_office_workers, 
+                entertainment, number_of_shopper)
+            
+            print(self.office_entertainment_list)
 
     def is_plate_number_oddity_allowed(self, plate_number_oddity=0, xy=(0, 0)):
         x, y = xy
@@ -270,8 +295,8 @@ class RoadNetworkModel(Model):
                 return True
             else:
                 return False
-        elif self.policy_range_time == '6_10_and_15_20':
-            if day_tick >= (6 * 60) and day_tick <= (10 * 60):
+        elif self.policy_range_time == '6_11_and_15_20':
+            if day_tick >= (6 * 60) and day_tick <= (11 * 60):
                 return True
             elif day_tick >= (15 * 60) and day_tick <= (20 * 60):
                 return True
@@ -279,3 +304,23 @@ class RoadNetworkModel(Model):
                 return False
         else:
             return False
+    
+    def get_number_of_workers_and_shoppers(self, proportion_of_office_workers, number_of_cars):
+        number_of_office_workers = math.ceil(proportion_of_office_workers * number_of_cars)
+        number_of_shopper = number_of_cars - number_of_office_workers
+
+        return number_of_office_workers, number_of_shopper
+    
+    def get_random_office_entertainment_list(self, office, number_of_office_workers, entertainment, number_of_shopper):
+        office_list = []
+        while len(office_list) <= number_of_office_workers:
+            office_list.append(office[self.random.randint(0, len(office) - 1)])
+
+        entertainment_list = []
+        while len(entertainment_list) <= number_of_shopper:
+            entertainment_list.append(
+                entertainment[self.random.randint(0, len(entertainment) - 1)])
+
+        office_entertainment_list = office_list + entertainment_list
+
+        return office_entertainment_list
