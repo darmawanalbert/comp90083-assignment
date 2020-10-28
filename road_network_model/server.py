@@ -66,7 +66,7 @@ policy_range_time = [
     '8_11_and_17_20',
     '6_9_and_15_18',
     '8_9_and_17_18',
-    '6_10_and_15_20'
+    '6_11_and_15_20'
 ]
 
 # Define parameter of Road Network Model
