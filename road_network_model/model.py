@@ -122,7 +122,6 @@ class RoadNetworkModel(Model):
         office = self.map.get_office_position()
         entertainment = self.map.get_entertainment_position()
 
-
         # Create destination list based on weekday/weekend proportion
         """proportion_of_office_workers = DAY[self.day]
         number_of_office_workers = math.ceil(proportion_of_office_workers * number_of_cars)
