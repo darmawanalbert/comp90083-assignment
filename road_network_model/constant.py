@@ -10,9 +10,9 @@ GRID_WIDTH = 100
 GRID_HEIGHT = 100
 
 # Initialization Constant
-NUMBER_OF_CARS = 5
+NUMBER_OF_CARS = 30
 
-LAYOUT_FILENAME = "road_network_model/layouts/map2_100x100.layout"
+LAYOUT_FILENAME = "road_network_model/layouts/map_100x100.layout"
 
 COLOR = {
     "dark_grey":"#333333",
@@ -30,12 +30,7 @@ DIRECTION = {
 }
 
 # proportion of office workers for each day
-DAY = {
-    "THU": 0.7,
-    "FRI": 0.8,
-    "SAT": 0.2,
-    "SUN": 0.1
-}
+DAY = [0.60, 0.65, 0.60, 0.40, 0.35, 0.60]
 
 # Car State
 CAR_STATE = {
@@ -58,4 +53,20 @@ BUILDING = {
     "O": 'OFFICE',
     "R": 'RESIDENCE',
     "E": 'ENTERTAINMENT'
+}
+
+ACTIVITY = ["HIGHLY_ACTIVE", "BUSINESS_HOURS", "PEAK_HOURS"]
+
+# Peak Hours
+PEAK_HOURS = {
+    "START_PEAK_HOUR_1" : 420,
+    "END_PEAK_HOUR_1" : 600,
+    "START_PEAK_HOUR_2" : 960,
+    "END_PEAK_HOUR_2" : 1140
+}
+
+ACTIVITY_PROPORTION = {
+    "HIGHLY_ACTIVE" : 0.05,
+    "BUSINESS_HOURS" : 0.27,
+    "PEAK_HOURS" : 0.68
 }

@@ -118,13 +118,40 @@ class MapGenerator:
         else:
             return False
 
+    def is_all_road(self, orientation, current_coordinate, destination_coordinate):
+        flag = True
+
+        # Horizontal orientation, y values are the same
+        if orientation == 0:
+            diff = abs(current_coordinate[0] - destination_coordinate[0])
+            if (current_coordinate[0] < destination_coordinate[0]):
+                for i in range(diff):
+                    if(self.is_road(current_coordinate[0] + i, current_coordinate[1]) == False):
+                        flag = False
+            else:
+                for i in range(diff):
+                    if(self.is_road(destination_coordinate[0] + i, destination_coordinate[1]) == False):
+                        flag = False
+        # Vertical orientation, x values are the same
+        else:
+            diff = abs(current_coordinate[1] - destination_coordinate[1])
+            if (current_coordinate[1] < destination_coordinate[1]):
+                for i in range(diff):
+                    if(self.is_road(current_coordinate[0], current_coordinate[1] + i) == False):
+                        flag = False
+            else:
+                for i in range(diff):
+                    if(self.is_road(destination_coordinate[0], destination_coordinate[1] + i) == False):
+                        flag = False
+        return flag
+
     def is_avenue(self, x, y):
-        
+
         fringes = self.get_fringes(x, y)
         _direction = self.layout[x][y]
         count = 0
         for fringe in fringes:
-            fringe_direction = self.layout[fringe[0]][fringe[1]]
+            fringe_direction = self.layout[fringe[0][0]][fringe[0][1]]
             if(fringe_direction == _direction):
                 count += 1
 
@@ -132,31 +159,9 @@ class MapGenerator:
             return True
         else:
             return False
-    
-    def is_plate_number_oddity_allowed(self, is_even_policy_enabled, is_odd_policy_enabled,  plate_number_oddity=0, xy=(0, 0)):
-        x, y = xy
 
-        if(self.is_avenue(x, y)):
-            if(is_even_policy_enabled == True):
-                if(plate_number_oddity % 2 == 0):
-                    return True
-                else: 
-                    return False
-                    
-            if(is_odd_policy_enabled == True):
-                if(plate_number_oddity % 2 == 1):
-                    return True
-                else: 
-                    return False
-        else:
-            return True
-
-    def rotate_possible_exit_deltas(self, possible_exit_deltas, previous_direction, intersection_type):
-        # No rotation is needed for single lane
-        #if intersection_type == INTERSECTION["ALL_LA"]:
-        #    return possible_exit_deltas
+    def rotate_possible_exit_deltas(self, possible_exit_deltas, previous_direction):
         # Positive degree is counter-clockwise
-
         degree = 0
         if (previous_direction == '<'):
             degree = math.pi / 2
@@ -179,7 +184,6 @@ class MapGenerator:
         current_x = current_pos[0]
         current_y = current_pos[1]
         number_of_fringes = len(self.get_fringes(current_x, current_y))
-        print("current_pos: ", current_pos)
         if(intersection_type == INTERSECTION["AVE_AVE"]):
             if number_of_fringes == 4: # Inner Lane
                 # 4 possibilities for each previous_direction:
@@ -219,7 +223,7 @@ class MapGenerator:
         else:
             possible_exit_deltas = []
 
-        rotated_possible_exit_deltas = self.rotate_possible_exit_deltas(possible_exit_deltas, previous_direction, intersection_type)
+        rotated_possible_exit_deltas = self.rotate_possible_exit_deltas(possible_exit_deltas, previous_direction)
         for possible_exit_delta in rotated_possible_exit_deltas:
             delta_x = possible_exit_delta[0]
             delta_y = possible_exit_delta[1]

@@ -14,7 +14,10 @@ def road_network_model_portrayal(agent):
 
     if type(agent) is Car:
         portrayal["Shape"] = "rect"
-        portrayal["Color"] = "red"
+        if agent.plate_number_oddity == 0:
+            portrayal["Color"] = "#FF0000"
+        else:
+            portrayal["Color"] = "#FF00FF"
         portrayal["scale"] = 10
         portrayal["Layer"] = 10
         portrayal["w"] = 0.5
