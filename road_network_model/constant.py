@@ -29,9 +29,6 @@ DIRECTION = {
     #"_": [0,0]
 }
 
-# proportion of office workers for each day
-DAY = [0.60, 0.65, 0.60, 0.40, 0.35, 0.60]
-
 # Car State
 CAR_STATE = {
     "IDLE": 0,

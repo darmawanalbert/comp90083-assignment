@@ -65,7 +65,7 @@ class Car(Agent):
                 car_in_front = False
 
                 for neighbor in neighbors:
-                    if (isinstance(neighbor, Car) 
+                    if (isinstance(neighbor, Car)
                         and neighbor.current_coor == self.front_coor):
                         # Check whether the neighbour car is in front
                         car_in_front = True
@@ -80,9 +80,9 @@ class Car(Agent):
         # if self.current_state is finished, check if it's time to return
         if self.current_state == "FINISHED":
             if ((self.activity_level == "PEAK_HOURS" and self.arrive_at_destination < 2)
-            or self.activity_level == "HIGHLY_ACTIVE" 
-            or self.activity_level == "BUSINESS_HOURS"):
-                # print("self.model.tick: ", self.model.tick, ", self.return_time: ", self.return_time)
+            or self.activity_level == "HIGHLY_ACTIVE"
+            or (self.activity_level == "BUSINESS_HOURS"
+                and self.model.tick % 1440 < self.model.end_peak_hour_2)):
                 if self.model.tick > self.return_time:
                     self.current_state = "MOVE"
 
@@ -245,7 +245,9 @@ class Car(Agent):
                     self.current_state = "FINISHED"
                     self.arrive_at_destination += 1
                     # Now, destination is to return home
+                    destination_coor_temp = self.destination_coor
                     self.destination_coor = self.source_coor
+                    self.source_coor = destination_coor_temp
 
                     # Return soon if activity is HIGHLY_ACTIVE or BUSINESS_HOURS
                     if self.activity_level == "HIGHLY_ACTIVE" or self.activity_level == "BUSINESS_HOURS":

@@ -5,7 +5,7 @@ from mesa.datacollection import DataCollector
 
 from road_network_model.agent import Car, Road, Office, Residence, Entertainment, TrafficLight
 from road_network_model.map import MapGenerator
-from road_network_model.constant import DIRECTION, CAR_STATE, DAY, COLOR, PEAK_HOURS, ACTIVITY_PROPORTION
+from road_network_model.constant import DIRECTION, CAR_STATE, COLOR, PEAK_HOURS, ACTIVITY_PROPORTION
 
 from road_network_model.util import get_euclidean_distance
 
@@ -47,7 +47,7 @@ class RoadNetworkModel(Model):
         "A model for simulating Road Network Model"
     )
 
-    def __init__(self, number_of_cars, width, height, is_odd_even_policy_enabled, policy_range_time):
+    def __init__(self, number_of_cars, width, height, is_odd_even_policy_enabled, is_odd_date, policy_range_time):
         # Tick increment
         self.tick = 0
 
@@ -58,8 +58,7 @@ class RoadNetworkModel(Model):
         self.is_odd_even_policy_enabled = is_odd_even_policy_enabled
 
         # Set the day of the week
-        self.day = 1
-        self.is_odd_date = True
+        self.is_odd_date = is_odd_date
 
         # Set up Spatial dimension
         self.grid = MultiGrid(width, height, True)
@@ -120,7 +119,7 @@ class RoadNetworkModel(Model):
         entertainment = self.map.get_entertainment_position()
 
         # Create destination list based on weekday/weekend proportion
-        proportion_of_office_workers = DAY[self.day]
+        proportion_of_office_workers = 0.65
         number_of_office_workers = math.ceil(proportion_of_office_workers * number_of_cars)
         number_of_shopper = number_of_cars - number_of_office_workers
 
@@ -214,14 +213,9 @@ class RoadNetworkModel(Model):
             if type(cell) is Car])
         self.datacollector.collect(self)
         print(self.tick)
-        # After 4 days (5760 minutes), stop the simulation
-        if self.tick >= 5760:
+        # After a day (1440 minutes), stop the simulation
+        if self.tick >= 1440:
             self.running = False
-
-        # Check whether a day (1440 minutes) has passed
-        if self.tick % 1440 == 0:
-            self.day += 1
-            self.is_odd_date = not self.is_odd_date
 
     def is_plate_number_oddity_allowed(self, plate_number_oddity=0, xy=(0, 0)):
         x, y = xy
@@ -277,8 +271,8 @@ class RoadNetworkModel(Model):
                 return True
             else:
                 return False
-        elif self.policy_range_time == '6_10_and_15_20':
-            if day_tick >= (6 * 60) and day_tick <= (10 * 60):
+        elif self.policy_range_time == '6_11_and_15_20':
+            if day_tick >= (6 * 60) and day_tick <= (11 * 60):
                 return True
             elif day_tick >= (15 * 60) and day_tick <= (20 * 60):
                 return True
