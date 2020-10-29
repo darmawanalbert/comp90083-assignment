@@ -28,16 +28,6 @@ class InfoTextElement(TextElement):
         mean_travel_time = model.mean_travel_time
         mean_travel_time_text = "{0:.2f}".format(mean_travel_time)
 
-        # Day
-        day_text = str(model.day)
-
-        # Day Oddity
-        oddity_text = ""
-        if model.is_odd_date:
-            oddity_text = "Odd day"
-        else:
-            oddity_text = "Even day"
-
         # Time
         current_time = model.tick % 1440
         hour = math.floor(current_time / 60)
@@ -46,7 +36,7 @@ class InfoTextElement(TextElement):
         minute_text = "0" + str(minute) if minute < 10 else str(minute)
         time_text = hour_text + ":" + minute_text
 
-        return "<b>Info</b><br>Mean Travel Time: {} minutes<br>Day: {} ({}) <br>Time: {}".format(mean_travel_time_text, day_text, oddity_text, time_text)
+        return "<b>Info</b><br>Mean Travel Time: {} minutes<br>Time: {}".format(mean_travel_time_text, time_text)
 
 class LegendsTextElement(TextElement):
     def render(self, model):
@@ -66,7 +56,7 @@ policy_range_time = [
     '8_11_and_17_20',
     '6_9_and_15_18',
     '8_9_and_17_18',
-    '6_10_and_15_20'
+    '6_11_and_15_20'
 ]
 
 # Define parameter of Road Network Model
@@ -75,6 +65,7 @@ road_network_model_params = {
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
     "is_odd_even_policy_enabled": UserSettableParameter("checkbox", "Odd-Even Policy Enabled", True),
+    "is_odd_date": UserSettableParameter("checkbox", "Is Odd Date", True),
     "policy_range_time": UserSettableParameter('choice', 'Range Time (in hours)', value='7_10_and_16_19', choices=policy_range_time)
 }
 

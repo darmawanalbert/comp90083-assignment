@@ -5,7 +5,7 @@ from mesa.datacollection import DataCollector
 
 from road_network_model.agent import Car, Road, Office, Residence, Entertainment, TrafficLight
 from road_network_model.map import MapGenerator
-from road_network_model.constant import DIRECTION, CAR_STATE, DAY, COLOR, PEAK_HOURS, ACTIVITY_PROPORTION
+from road_network_model.constant import DIRECTION, CAR_STATE, COLOR, PEAK_HOURS, ACTIVITY_PROPORTION
 
 from road_network_model.util import get_euclidean_distance
 
@@ -27,7 +27,6 @@ def number_finished_cars(model):
     return sum([1 for j in range(100) for i in range(100) for cell in model.grid.iter_cell_list_contents((i,j))
             if type(cell) is Car and cell.current_state == "FINISHED"])
 
-# TODO: Remove later
 def number_office(model):
     return sum([1 for j in range(100) for i in range(100) for cell in model.grid.iter_cell_list_contents((i,j))
             if type(cell) is Car and cell.arrive_at_destination == 0])
@@ -47,7 +46,7 @@ class RoadNetworkModel(Model):
         "A model for simulating Road Network Model"
     )
 
-    def __init__(self, number_of_cars, width, height, is_odd_even_policy_enabled, policy_range_time):
+    def __init__(self, number_of_cars, width, height, is_odd_even_policy_enabled, is_odd_date, policy_range_time):
         # Tick increment
         self.tick = 0
 
@@ -58,8 +57,7 @@ class RoadNetworkModel(Model):
         self.is_odd_even_policy_enabled = is_odd_even_policy_enabled
 
         # Set the day of the week
-        self.day = 1
-        self.is_odd_date = True
+        self.is_odd_date = is_odd_date
 
         # Set up Spatial dimension
         self.grid = MultiGrid(width, height, True)
@@ -69,8 +67,6 @@ class RoadNetworkModel(Model):
         self.running = True
 
         self.policy_range_time = policy_range_time
-
-        print("Policy Range Time: ", self.policy_range_time)
 
         # Set up peak hours
         self.start_peak_hour_1 = PEAK_HOURS["START_PEAK_HOUR_1"] #7
@@ -83,7 +79,7 @@ class RoadNetworkModel(Model):
         num_business_hours_cars = math.ceil(ACTIVITY_PROPORTION["BUSINESS_HOURS"] * number_of_cars)
         num_peak_hours_cars = number_of_cars - (num_highly_active_cars + num_business_hours_cars)
 
-        ## generate road
+        # generate road
         self.map = MapGenerator()
         roadPosition = self.map.get_road_position()
         for i in range(len(roadPosition)):
@@ -96,19 +92,19 @@ class RoadNetworkModel(Model):
             office = Office(i, officePosition[i], self)
             self.grid.place_agent(office, officePosition[i])
 
-        ## generate residence
+        # generate residence
         residencePosition = self.map.get_residence_position()
         for i in range(len(residencePosition)):
             residence = Residence(i, residencePosition[i], self)
             self.grid.place_agent(residence, residencePosition[i])
 
-        ## generate entertainment
+        # generate entertainment
         entertainmentPosition = self.map.get_entertainment_position()
         for i in range(len(entertainmentPosition)):
             entertainment = Entertainment(i, entertainmentPosition[i], self)
             self.grid.place_agent(entertainment, entertainmentPosition[i])
 
-        ## generate traffic light
+        # generate traffic light
         trafficLightPosition = self.map.get_traffic_light_position()
         for i in range(len(trafficLightPosition)):
             trafficLight = TrafficLight(i, trafficLightPosition[i], self, COLOR["dark_grey"])
@@ -120,7 +116,7 @@ class RoadNetworkModel(Model):
         entertainment = self.map.get_entertainment_position()
 
         # Create destination list based on weekday/weekend proportion
-        proportion_of_office_workers = DAY[self.day]
+        proportion_of_office_workers = 0.65
         number_of_office_workers = math.ceil(proportion_of_office_workers * number_of_cars)
         number_of_shopper = number_of_cars - number_of_office_workers
 
@@ -134,7 +130,6 @@ class RoadNetworkModel(Model):
 
         office_entertainment_list = office_list + entertainment_list
         random.shuffle(residence_list)
-        # print("Residence List: ", residence_list)
 
         layout = self.map.get_layout()
         for i in range(number_of_cars):
@@ -153,17 +148,11 @@ class RoadNetworkModel(Model):
                 return_time = self.random.randint(self.start_peak_hour_2,self.end_peak_hour_2)
 
             plate_number_oddity = self.random.randint(0, 1)
-            #plate_number_oddity = 0
+
             source_x = residence_list[i][0]
             source_y = residence_list[i][1]
             destination_x = office_entertainment_list[i][0]
             destination_y = office_entertainment_list[i][1]
-
-            # TODO: Remove this later
-            # source_x = 58
-            # source_y = 92
-            # destination_x = 58
-            # destination_y = 85
 
             state_fringes = self.map.get_fringes(source_x, source_y)
             shortest_distance = float("inf")
@@ -178,7 +167,7 @@ class RoadNetworkModel(Model):
                     if newDist < shortest_distance:
                         shortest_distance = newDist
                         car_direction = current_direction
-            
+
             # all cars are initialised as IDLE
             car_state = "IDLE"
 
@@ -213,20 +202,13 @@ class RoadNetworkModel(Model):
         self.mean_travel_time = np.mean([cell.travel_time for j in range(100) for i in range(100) for cell in self.grid.iter_cell_list_contents((i,j))
             if type(cell) is Car])
         self.datacollector.collect(self)
-        print(self.tick)
-        # After 4 days (5760 minutes), stop the simulation
-        if self.tick >= 5760:
-            self.running = False
 
-        # Check whether a day (1440 minutes) has passed
-        if self.tick % 1440 == 0:
-            self.day += 1
-            self.is_odd_date = not self.is_odd_date
+        # After a day (1440 minutes), stop the simulation
+        if self.tick >= 1440:
+            self.running = False
 
     def is_plate_number_oddity_allowed(self, plate_number_oddity=0, xy=(0, 0)):
         x, y = xy
-        # print("plate_number_oddity: ", plate_number_oddity)
-        # print("xy: ", xy)
         # implement odd even policy for avenue only.
         if(self.map.is_avenue(x, y)):
             if(self.is_odd_date == True): # date is odd
@@ -246,9 +228,6 @@ class RoadNetworkModel(Model):
         #1 day == 1440 minutes
         day_tick = self.tick % 1440
 
-        # print("day_tick:", day_tick)
-        # print("self.policy_range_time : ", self.policy_range_time)
-        
         if self.policy_range_time == '7_10_and_16_19':
             if day_tick >= (7 * 60) and day_tick <= (10 * 60):
                 return True
@@ -277,8 +256,8 @@ class RoadNetworkModel(Model):
                 return True
             else:
                 return False
-        elif self.policy_range_time == '6_10_and_15_20':
-            if day_tick >= (6 * 60) and day_tick <= (10 * 60):
+        elif self.policy_range_time == '6_11_and_15_20':
+            if day_tick >= (6 * 60) and day_tick <= (11 * 60):
                 return True
             elif day_tick >= (15 * 60) and day_tick <= (20 * 60):
                 return True

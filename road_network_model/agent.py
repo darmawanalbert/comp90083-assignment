@@ -36,8 +36,6 @@ class Car(Agent):
         self.arrive_at_destination = 0
         self.activity_level = activity_level
 
-        # print("uniqueId: ", self.unique_id , ", Destination Coordinates: ", self.destination_coor)
-
     def neighbors(self):
         neighbors = self.model.grid.neighbor_iter(
                         (self.current_coor[Car.X_COOR],
@@ -50,7 +48,6 @@ class Car(Agent):
     def step(self):
         # STATE:
         # IDLE <-> MOVE <-> FINISHED
-        # print("current state: ", self.current_state)
 
         # Map Information
         map_instance = self.model.map
@@ -65,7 +62,7 @@ class Car(Agent):
                 car_in_front = False
 
                 for neighbor in neighbors:
-                    if (isinstance(neighbor, Car) 
+                    if (isinstance(neighbor, Car)
                         and neighbor.current_coor == self.front_coor):
                         # Check whether the neighbour car is in front
                         car_in_front = True
@@ -80,9 +77,8 @@ class Car(Agent):
         # if self.current_state is finished, check if it's time to return
         if self.current_state == "FINISHED":
             if ((self.activity_level == "PEAK_HOURS" and self.arrive_at_destination < 2)
-            or self.activity_level == "HIGHLY_ACTIVE" 
-            or self.activity_level == "BUSINESS_HOURS"):
-                # print("self.model.tick: ", self.model.tick, ", self.return_time: ", self.return_time)
+            or self.activity_level == "HIGHLY_ACTIVE"
+            or (self.activity_level == "BUSINESS_HOURS")):
                 if self.model.tick > self.return_time:
                     self.current_state = "MOVE"
 
@@ -98,9 +94,6 @@ class Car(Agent):
             new_x = self.current_coor[0]
             new_y = self.current_coor[1]
 
-            # print("self.current_coor: ", self.current_coor)
-            # print("new_direction: ", new_direction)
-
             updated_direction = ""
             # Determine Car direction
             # Inside a Office / Residence / Entertainment
@@ -108,12 +101,8 @@ class Car(Agent):
                 and (abs(self.current_coor[1] - self.destination_coor[1]) <= 4)
                 and (abs(self.current_coor[1] - self.destination_coor[1]) > 0)
                 and map_instance.is_all_road(1, self.current_coor, self.destination_coor)):
-                # print("unique_id: ", self.unique_id, ", IF 1")
 
                 diff = self.current_coor[1] - self.destination_coor[1]
-                #print("Current y: ", self.current_coor[1])
-                #print("Destination y: ", self.destination_coor[1])
-                #print("DIFF: ", abs(diff))
                 flag = True
 
                 for i in range(abs(diff)):
@@ -132,7 +121,7 @@ class Car(Agent):
                 and (abs(self.current_coor[0] - self.destination_coor[0]) > 0)
                 and map_instance.is_all_road(0, self.current_coor, self.destination_coor)
                 ):
-                # print("unique_id: ", self.unique_id, ", IF 2")
+
                 diff = self.current_coor[0] - self.destination_coor[0]
                 flag = True
 
@@ -149,20 +138,14 @@ class Car(Agent):
 
             # Car is in building
             elif new_direction in BUILDING:
-                # print("unique_id: ", self.unique_id, ", IF 3")
                 updated_direction = self.exit_direction
                 self.current_direction = updated_direction
 
             # Encounter an intersection
             elif new_direction in INTERSECTION_SIGN:
-                # print("unique_id: ", self.unique_id, ", IF 4")
                 current_pos = (self.current_coor[0], self.current_coor[1])
                 intersection_type = layout[self.current_coor[0]][self.current_coor[1]]
                 exit_points = map_instance.get_exit_point(current_pos, self.current_direction, intersection_type)
-                #print("exit_points: ", exit_points)
-
-                #print("self.model.is_odd_even_policy_time(): ", self.model.is_odd_even_policy_time())
-
                 shortest_distance = float("inf")
                 shortest_exit_point = ()
                 for exit_point in exit_points:
@@ -183,21 +166,15 @@ class Car(Agent):
 
                 self.shortest_exit_point = shortest_exit_point
 
-                # print("shortest_exit_point: ", shortest_exit_point)
-
                 local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
                 updated_direction = local_current_direction
 
-                # print("local_current_direction: ", local_current_direction)
-
             # Inside an Intersection
             elif new_direction == "x":
-                # print("unique_id: ", self.unique_id, ", IF 5")
                 local_current_direction = get_next_direction(self.current_direction, self.current_coor, layout[self.shortest_exit_point[0]][self.shortest_exit_point[1]], self.shortest_exit_point)
                 updated_direction = local_current_direction
 
             else: # On a road, only one way to go
-                # print("unique_id: ", self.unique_id, ", IF 6")
                 self.current_direction = new_direction
                 updated_direction = new_direction
 
@@ -227,10 +204,8 @@ class Car(Agent):
                     self.current_state = "IDLE"
                 else:
                     self.next_coor = (new_x, new_y)
-                    #self.current_state = "MOVE"
             else:
                 self.next_coor = (new_x, new_y)
-                #self.current_state = "MOVE"
 
             # if travelling, add mean travel time
             if self.current_state == "MOVE":
@@ -245,7 +220,9 @@ class Car(Agent):
                     self.current_state = "FINISHED"
                     self.arrive_at_destination += 1
                     # Now, destination is to return home
+                    destination_coor_temp = self.destination_coor
                     self.destination_coor = self.source_coor
+                    self.source_coor = destination_coor_temp
 
                     # Return soon if activity is HIGHLY_ACTIVE or BUSINESS_HOURS
                     if self.activity_level == "HIGHLY_ACTIVE" or self.activity_level == "BUSINESS_HOURS":
@@ -272,7 +249,6 @@ class Car(Agent):
             self.next_coor = self.current_coor
 
     def advance(self):
-        """ advance """
         self.current_coor = self.next_coor
         self.model.grid.move_agent(self, self.next_coor)
 
@@ -312,9 +288,6 @@ class TrafficLight(Agent):
         self.pos = pos
         self.model = model
         self.color = color
-
-    def step(self):
-        print("hello!") ## wait...
 
     def advance(self):
         self.current_coor = self.next_coor
