@@ -41,6 +41,10 @@ def simulation_minutes(model):
 def mean_travel_time(model):
     return model.mean_travel_time
 
+def std_travel_time(model):
+    return np.std([cell.travel_time for j in range(100) for i in range(100) for cell in model.grid.iter_cell_list_contents((i,j))
+            if type(cell) is Car])
+
 class RoadNetworkModel(Model):
     description = (
         "A model for simulating Road Network Model"
@@ -192,7 +196,8 @@ class RoadNetworkModel(Model):
             "SimulationMinutes": simulation_minutes,
             "ToOffice": number_office,
             "ToResidence": number_residence,
-            "MeanTravelTime": mean_travel_time
+            "MeanTravelTime": mean_travel_time,
+            "StdTravelTime": std_travel_time
         })
         self.datacollector.collect(self)
 

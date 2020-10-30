@@ -292,7 +292,3 @@ class TrafficLight(Agent):
         self.pos = pos
         self.model = model
         self.color = color
-
-    def advance(self):
-        self.current_coor = self.next_coor
-        self.model.grid.move_agent(self, self.next_coor)
