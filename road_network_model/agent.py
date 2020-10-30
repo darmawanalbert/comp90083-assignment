@@ -24,6 +24,7 @@ class Car(Agent):
         self.source_coor = source_coor
         self.destination_coor = destination_coor
         self.exit_direction = car_direction
+        self.absolute_source_coor = source_coor
         self.current_direction = car_direction
         self.current_state = car_state # initialised to be 'IDLE'
         self.next_coor = (0,0)
@@ -78,8 +79,11 @@ class Car(Agent):
         if self.current_state == "FINISHED":
             if ((self.activity_level == "PEAK_HOURS" and self.arrive_at_destination < 2)
             or self.activity_level == "HIGHLY_ACTIVE"
-            or (self.activity_level == "BUSINESS_HOURS")):
-                if self.model.tick > self.return_time:
+            or (self.activity_level == "BUSINESS_HOURS"
+                and (self.current_coor != self.absolute_source_coor
+                or self.return_time <= self.model.end_peak_hour_2))):
+                # cars that are not home must return or if it's home, do not leave when it's after peak hour 2
+                if self.model.tick >= self.return_time:
                     self.current_state = "MOVE"
 
         # performs "MOVE" procedure
