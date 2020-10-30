@@ -229,18 +229,9 @@ class Car(Agent):
                     self.source_coor = destination_coor_temp
 
                     # Return soon if activity is HIGHLY_ACTIVE or BUSINESS_HOURS
-                    if self.activity_level == "HIGHLY_ACTIVE":
+                    if self.activity_level == "HIGHLY_ACTIVE" or self.activity_level == "BUSINESSHOURS":
                         self.return_time = self.model.tick + 5
                     
-                    if self.activity_level == "BUSINESS_HOURS":
-                        temp_return_time = self.model.tick + 5
-                        self.return_time = temp_return_time
-                        #if temp_return_time < self.model.end_peak_hour_2:
-                            # ensure that car returns home once the second peak hour ends
-                        #    self.return_time = temp_return_time
-                        #else:
-                        #    self.return_time = self.model.end_peak_hour_2
-
                     state_fringes = map_instance.get_fringes(self.next_coor[0], self.next_coor[1])
                     shortest_distance = float("inf")
                     car_direction = state_fringes[0][1]
