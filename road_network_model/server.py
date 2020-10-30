@@ -12,13 +12,18 @@ import math
 # Define a CanvasGrid to visualise the Road Network Model
 canvas_element = CanvasGrid(road_network_model_portrayal, GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT)
 
-chart = ChartModule(
+chart_car_state = ChartModule(
     [
         {"Label": "Idle", "Color": "#FF0000"},
         {"Label": "Move", "Color": "#00FF00"},
-        {"Label": "Finished", "Color": "#0000FF"},
-        {"Label": "NumberOffice", "Color": "#F1C40F"},
-        {"Label": "NumberResidence", "Color": "#2C3E50"}
+        {"Label": "Finished", "Color": "#0000FF"}
+    ]
+)
+
+chart_car_moving = ChartModule(
+    [
+        {"Label": "ToOffice", "Color": "#F1C40F"},
+        {"Label": "ToResidence", "Color": "#2C3E50"}
     ]
 )
 
@@ -40,15 +45,100 @@ class InfoTextElement(TextElement):
 
 class LegendsTextElement(TextElement):
     def render(self, model):
-        legends_text = "<b>Legends</b><br>"
-        legends_text += "Grey: Road<br>"
-        legends_text += "Black: Intersection<br>"
-        legends_text += "Yellow: Residence<br>"
-        legends_text += "Green: Entertainment<br>"
-        legends_text += "Blue: Office<br>"
-        legends_text += "Pink: Car (odd plate)<br>"
-        legends_text += "Red: Car (even plate)<br><br>"
-        legends_text += "<b>Car State</b>"
+        legends_text = "<br><b>Legends</b><br><br>"
+        legends_text += "<table>"
+        
+        legends_text += "<tr>"
+        legends_text += "<td>"
+        legends_text += "Road"
+        legends_text += "</td>"
+        legends_text += "<td>"
+        legends_text += "&nbsp; &nbsp;"
+        legends_text += "</td>"
+        legends_text += "<td style='text-align: center; vertical-align: middle;'>"
+        legends_text += "<p style='border: 3px solid grey; width: 20px; height: 3px; '>&nbsp;</p>"
+        legends_text += "</td>"
+        legends_text += "</tr>"
+
+        legends_text += "<tr>"
+        legends_text += "<td>"
+        legends_text += "Intersection"
+        legends_text += "</td>"
+        legends_text += "<td>"
+        legends_text += "&nbsp; &nbsp;"
+        legends_text += "</td>"
+        legends_text += "<td style='text-align: center; vertical-align: middle;'>"
+        legends_text += "<p style='border: 3px solid #333333; width: 20px; height: 3px; '>&nbsp;</p>"
+        legends_text += "</td>"
+        legends_text += "</tr>"
+
+        legends_text += "<tr>"
+        legends_text += "<td>"
+        legends_text += "Residence"
+        legends_text += "</td>"
+        legends_text += "<td>"
+        legends_text += "&nbsp; &nbsp;"
+        legends_text += "</td>"
+        legends_text += "<td style='text-align: center; vertical-align: middle;'>"
+        legends_text += "<p style='border: 3px solid yellow; width: 20px; height: 3px; '>&nbsp;</p>"
+        legends_text += "</td>"
+        legends_text += "</tr>"
+
+        legends_text += "<tr>"
+        legends_text += "<td>"
+        legends_text += "Entertainment"
+        legends_text += "</td>"
+        legends_text += "<td>"
+        legends_text += "&nbsp; &nbsp;"
+        legends_text += "</td>"
+        legends_text += "<td style='text-align: center; vertical-align: middle;'>"
+        legends_text += "<p style='border: 3px solid green; width: 20px; height: 3px; '>&nbsp;</p>"
+        legends_text += "</td>"
+        legends_text += "</tr>"
+
+        legends_text += "<tr>"
+        legends_text += "<td>"
+        legends_text += "Office"
+        legends_text += "</td>"
+        legends_text += "<td>"
+        legends_text += "&nbsp; &nbsp;"
+        legends_text += "</td>"
+        legends_text += "<td style='text-align: center; vertical-align: middle;'>"
+        legends_text += "<p style='border: 3px solid blue; width: 20px; height: 3px; '>&nbsp;</p>"
+        legends_text += "</td>"
+        legends_text += "</tr>"
+
+        legends_text += "<tr>"
+        legends_text += "<td>"
+        legends_text += "Car (Odd plate)"
+        legends_text += "</td>"
+        legends_text += "<td>"
+        legends_text += "&nbsp; &nbsp;"
+        legends_text += "</td>"
+        legends_text += "<td style='text-align: center; vertical-align: middle;'>"
+        legends_text += "<p style='border: 3px solid #FF00FF; width: 20px; height: 3px; '>&nbsp;</p>"
+        legends_text += "</td>"
+        legends_text += "</tr>"
+
+        legends_text += "<tr>"
+        legends_text += "<td>"
+        legends_text += "Car (Even plate)"
+        legends_text += "</td>"
+        legends_text += "<td>"
+        legends_text += "&nbsp; &nbsp;"
+        legends_text += "</td>"
+        legends_text += "<td style='text-align: center; vertical-align: middle;'>"
+        legends_text += "<p style='border: 3px solid red; width: 20px; height: 3px; '>&nbsp;</p>"
+        legends_text += "</td>"
+        legends_text += "</tr>"
+
+        legends_text += "</table>"
+        legends_text += "<br><br><b>Car State</b>"
+        return legends_text
+
+class LegendsTextElement2(TextElement):
+    def render(self, model):
+        legends_text = "<br><br><b>Car Moving</b>"
         return legends_text
 
 policy_range_time = [
@@ -71,7 +161,7 @@ road_network_model_params = {
 
 # Instantiate the server at port 8521
 server = ModularServer(
-    RoadNetworkModel, [InfoTextElement(), canvas_element, LegendsTextElement(), chart], PROJECT_TITLE, road_network_model_params
+    RoadNetworkModel, [InfoTextElement(), canvas_element, LegendsTextElement(), chart_car_state, LegendsTextElement2(), chart_car_moving], PROJECT_TITLE, road_network_model_params
 )
 
 server.port = 8521

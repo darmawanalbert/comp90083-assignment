@@ -190,8 +190,8 @@ class RoadNetworkModel(Model):
             "Move": number_move_cars,
             "Finished": number_finished_cars,
             "SimulationMinutes": simulation_minutes,
-            "NumberOffice": number_office,
-            "NumberResidence": number_residence,
+            "ToOffice": number_office,
+            "ToResidence": number_residence,
             "MeanTravelTime": mean_travel_time
         })
         self.datacollector.collect(self)
